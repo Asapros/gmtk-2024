@@ -2,14 +2,14 @@ use bevy::prelude::*;
 use crate::tilemap::{TileType, Tilemap};
 
 #[derive(Debug)]
-enum Direction {
+pub enum Direction {
     North,
     South,
     West,
     East
 }
 
-fn delta(primary: &(i32, i32), secondary: &(i32, i32)) -> Direction {
+pub fn delta(primary: &(i32, i32), secondary: &(i32, i32)) -> Direction {
     let difference = (primary.0 - secondary.0, primary.1 - secondary.1);
     match difference {
         (0, -1) => {Direction::North},

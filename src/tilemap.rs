@@ -32,14 +32,19 @@ impl Tilemap {
         Self { atlas_layout, texture, tiles: HashMap::new(), offset }
     }
 
+    pub fn grid_to_translation(&self, position: (i32, i32)) -> Vec2 {
+        Vec2::new(
+            (TILE_SIZE * position.0 + TILE_SIZE / 2) as f32 + self.offset.x,
+            (TILE_SIZE * position.1 + TILE_SIZE / 2) as f32 + self.offset.y
+        )
+    }
+
     pub fn set(&mut self, commands: &mut Commands, position: IVec3, tile_type: TileType) {
         if let Some(entity) = self.tiles.get(&position) {
             commands.entity(entity.clone()).despawn()
         }
-        let translation = Vec3::new(
-            (TILE_SIZE * position.x + TILE_SIZE / 2) as f32 + self.offset.x,
-            (TILE_SIZE * position.y + TILE_SIZE / 2) as f32 + self.offset.y,
-            position.z as f32
+        let translation = Vec3::from(
+            (self.grid_to_translation((position.x, position.y)), position.z as f32)
         );
         let entity = commands.spawn((
             SpriteBundle {

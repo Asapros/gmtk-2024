@@ -22,8 +22,8 @@ fn get_background(theme: &LevelTheme, asset_server: &Res<AssetServer>) -> Handle
 
 pub struct Level {
     offset: Vec2,
-    tilemap: Tilemap,
-    cable: Vec<(i32, i32)>,
+    pub(crate) tilemap: Tilemap,
+    pub(crate) cable: Vec<(i32, i32)>,
     theme: LevelTheme
 }
 
@@ -69,13 +69,16 @@ impl LevelManager {
 
         self.levels.len() - 1
     }
+    pub fn get_current_level(&self) -> &Level {
+        &self.levels[self.active]
+    }
 }
 
 
 pub fn setup_main_level(mut commands: Commands, mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>, assets: Res<AssetServer>) {
     let tilemap_factory = TilemapFactory {
         atlas_layout: texture_atlases.add(TextureAtlasLayout::from_grid(Vec2::splat(16.0), 4, 4, None, None)),
-        texture: assets.load("textures/rj45-tile.png")
+        texture: assets.load("tiles/rj45.png")
     };
 
     let path = vec![
