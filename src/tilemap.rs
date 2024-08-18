@@ -55,10 +55,3 @@ impl Tilemap {
         self.tiles.insert(position, entity);
     }
 }
-
-pub fn setup_grid(mut commands: Commands, assets: Res<AssetServer>, mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>) {
-    commands.insert_resource(Tilemap::new(
-        texture_atlases.add(TextureAtlasLayout::from_grid(Vec2::splat(16.0), 4, 4, None, None)),
-        assets.load("textures/rj45-tile.png")
-    ));
-}

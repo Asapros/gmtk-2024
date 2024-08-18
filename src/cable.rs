@@ -20,7 +20,7 @@ fn delta(primary: &(i32, i32), secondary: &(i32, i32)) -> Direction {
     }
 }
 
-pub fn set_cable(tilemap: &mut Tilemap, commands: &mut Commands, path: Vec<(i32, i32)>) {
+pub fn set_cable(tilemap: &mut Tilemap, commands: &mut Commands, path: &Vec<(i32, i32)>) {
     for (index, coordinate) in path.iter().enumerate() {
         let previous = if index == 0 {None} else {path.get(index-1)};
         let next = path.get(index+1);

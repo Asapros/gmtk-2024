@@ -6,8 +6,8 @@ mod cable;
 use bevy::prelude::*;
 use bevy::window::EnabledButtons;
 use crate::camera::setup_camera;
-use crate::level::{spawn_background, test_layers};
-use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, setup_grid};
+use crate::level::{test_layers};
+use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE};
 
 fn main() {
     App::new()
@@ -26,6 +26,6 @@ fn main() {
                 ..default()
             }),
         )
-        .add_systems(Startup, (setup_grid, setup_camera, test_layers, spawn_background).chain())
+        .add_systems(Startup, (setup_camera, test_layers).chain())
         .run();
 }
