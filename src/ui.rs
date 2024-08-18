@@ -1,29 +1,50 @@
+use bevy::pbr::wireframe::Wireframe;
 use bevy::prelude::*;
-use bevy::text::Text;
-
+use crate::level::{Level, LevelManager};
+use crate::tilemap::{MAP_WIDTH};
 #[derive(Component)]
-pub struct MoneyText;
+pub struct StatsText;
 
-pub const MENU_WIDTH: f32 = 256.0;
+pub const MENU_WIDTH: f32 = 300.0;
 
 pub fn spawn_text(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         TextBundle::from_section(
-           "MAM DOSYC",
-           TextStyle {
-               font: asset_server.load("fonts/QuinqueFive.ttf"),
-               font_size: 40.0,
-               color: Color::rgb(1., 0., 0.),
-               ..default()
+            "",
+            TextStyle {
+                font: asset_server.load("fonts/QuinqueFive.ttf"),
+                font_size: 30.0,
+                color: Color::rgb(0., 1., 0.),
+                ..default()
            },
         )
-            .with_text_justify(JustifyText::Center)
+            .with_text_justify(JustifyText::Left)
             .with_style(Style{
                 position_type: PositionType::Absolute,
-                top: Val::Px(5.0),
-                right: Val::Px(10.0),
+                top: Val::Px(10.0),
+                left: Val::Px((MAP_WIDTH * 48) as f32 + 175.0),
                 ..default()
             }),
-        MoneyText,
+        StatsText,
     ));
+}
+
+pub fn update_stats_text(mut text_query: Query<&mut Text, With<StatsText>>, manager: Res<LevelManager>) {
+    let mut text = text_query.single_mut();
+    let level = manager.get_current_level();
+    text.sections[0].value = format!("Money: {}\nRound: {}", level.money.to_string(), "1");
+}
+
+pub fn debug_add_money(
+    mut level_manager: ResMut<LevelManager>,
+    keys: Res<ButtonInput<KeyCode>>,
+) {
+    let mut level = level_manager.get_current_level_mut();
+
+    if keys.just_pressed(KeyCode::KeyO) {
+        level.money += 10;
+    }
+    if keys.just_pressed(KeyCode::KeyP) {
+        level.money -= 10;
+    }
 }

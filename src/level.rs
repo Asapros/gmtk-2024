@@ -24,7 +24,8 @@ pub struct Level {
     offset: Vec2,
     pub(crate) tilemap: Tilemap,
     pub(crate) cable: Vec<(i32, i32)>,
-    theme: LevelTheme
+    theme: LevelTheme,
+    pub money: i32,
 }
 
 impl Level {
@@ -53,16 +54,17 @@ impl LevelManager {
     pub fn switch_view(&mut self, index: usize, transform: &mut Transform) {
         self.active = index;
         let level = &self.levels[index];
-        transform.translation = Vec3::new(level.offset.x, level.offset.y, 0.0);
+        transform.translation = Vec3::new(level.offset.x + 256., level.offset.y, 0.0);
     }
 
-    pub fn add_level(&mut self, theme: LevelTheme, cable: Vec<(i32, i32)>, tilemap_factory: &TilemapFactory, commands: &mut Commands, asset_server: &Res<AssetServer>) -> usize {
+    pub fn add_level(&mut self, theme: LevelTheme, cable: Vec<(i32, i32)>, tilemap_factory: &TilemapFactory, commands: &mut Commands, asset_server: &Res<AssetServer>, money: i32) -> usize {
         let offset = Vec2::new((self.levels.len() * 2000) as f32, 0.0);
         let mut level = Level {
             offset,
             tilemap: tilemap_factory.instantiate(offset),
             cable,
-            theme
+            theme,
+            money,
         };
         level.setup(commands, asset_server);
         self.levels.push(level);
@@ -71,6 +73,9 @@ impl LevelManager {
     }
     pub fn get_current_level(&self) -> &Level {
         &self.levels[self.active]
+    }
+    pub fn get_current_level_mut(&mut self) -> &mut Level {
+        &mut self.levels[self.active]
     }
 }
 
@@ -88,8 +93,8 @@ pub fn setup_main_level(mut commands: Commands, mut texture_atlases: ResMut<Asse
         (5, 5), (4, 5), (4, 6), (3, 6), (3, 7), (2, 7), (2, 6), (1, 6), (0, 6), (0, 5), (-1, 5), (-2, 5), (-2, 4), (-3, 4), (-3, 3), (-4, 3), (-4, 2), (-5, 2), (-5, 1), (-6, 1)
     ];
     let mut manager = LevelManager {levels: vec![], active: 0};
-    manager.add_level(LevelTheme::Green, path.clone(), &tilemap_factory, &mut commands, &assets);
-    manager.add_level(LevelTheme::Black, path2.clone(), &tilemap_factory, &mut commands, &assets);
+    manager.add_level(LevelTheme::Green, path.clone(), &tilemap_factory, &mut commands, &assets, 69);
+    manager.add_level(LevelTheme::Black, path2.clone(), &tilemap_factory, &mut commands, &assets, 420);
 
     commands.insert_resource(manager);
     commands.insert_resource(tilemap_factory);
