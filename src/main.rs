@@ -6,7 +6,7 @@ mod cable;
 use bevy::prelude::*;
 use bevy::window::EnabledButtons;
 use crate::camera::setup_camera;
-use crate::level::{test_layers};
+use crate::level::{setup_main_level, debug_level_switch};
 use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE};
 
 fn main() {
@@ -26,6 +26,7 @@ fn main() {
                 ..default()
             }),
         )
-        .add_systems(Startup, (setup_camera, test_layers).chain())
+        .add_systems(Startup, (setup_camera, setup_main_level).chain())
+        .add_systems(Update, (debug_level_switch,))
         .run();
 }

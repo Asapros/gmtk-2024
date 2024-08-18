@@ -23,22 +23,27 @@ pub enum TileType {
 pub struct Tilemap {
     tiles: HashMap<IVec3, Entity>,
     atlas_layout: Handle<TextureAtlasLayout>,
-    texture: Handle<Image>
+    texture: Handle<Image>,
+    offset: Vec2
 }
 
 impl Tilemap {
-    pub fn new(atlas_layout: Handle<TextureAtlasLayout>, texture: Handle<Image>) -> Self {
-        Self { atlas_layout, texture, tiles: HashMap::new() }
+    pub fn new(atlas_layout: Handle<TextureAtlasLayout>, texture: Handle<Image>, offset: Vec2) -> Self {
+        Self { atlas_layout, texture, tiles: HashMap::new(), offset }
     }
 
     pub fn set(&mut self, commands: &mut Commands, position: IVec3, tile_type: TileType) {
         if let Some(entity) = self.tiles.get(&position) {
             commands.entity(entity.clone()).despawn()
         }
-
+        let translation = Vec3::new(
+            (TILE_SIZE * position.x + TILE_SIZE / 2) as f32 + self.offset.x,
+            (TILE_SIZE * position.y + TILE_SIZE / 2) as f32 + self.offset.y,
+            position.z as f32
+        );
         let entity = commands.spawn((
             SpriteBundle {
-                transform: Transform::from_xyz((TILE_SIZE * position.x + TILE_SIZE / 2) as f32, (TILE_SIZE * position.y + TILE_SIZE / 2) as f32, position.z as f32),
+                transform: Transform::from_translation(translation),
                 texture: self.texture.clone(),
                 sprite: Sprite {
                     custom_size: Some(Vec2::splat(TILE_SIZE as f32)),
@@ -53,5 +58,17 @@ impl Tilemap {
         )
         ).id();
         self.tiles.insert(position, entity);
+    }
+}
+
+#[derive(Resource)]
+pub struct TilemapFactory {
+    pub(crate) atlas_layout: Handle<TextureAtlasLayout>,
+    pub(crate) texture: Handle<Image>
+}
+
+impl TilemapFactory {
+    pub fn instantiate(&self, offset: Vec2) -> Tilemap {
+        Tilemap::new(self.atlas_layout.clone(), self.texture.clone(), offset)
     }
 }

@@ -1,7 +1,7 @@
 use std::fmt::format;
 use bevy::prelude::*;
 use crate::cable::set_cable;
-use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, Tilemap, TileType};
+use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, Tilemap, TileType, TilemapFactory};
 
 pub enum LevelTheme {
     Black ,
@@ -43,25 +43,61 @@ impl Level {
         set_cable(&mut self.tilemap, commands, &self.cable)
     }
 }
-
+#[derive(Resource)]
 pub struct LevelManager {
-    levels: Vec<Level>
+    levels: Vec<Level>,
+    active: usize
+}
+
+impl LevelManager {
+    pub fn switch_view(&mut self, index: usize, transform: &mut Transform) {
+        self.active = index;
+        let level = &self.levels[index];
+        transform.translation = Vec3::new(level.offset.x, level.offset.y, 0.0);
+    }
+
+    pub fn add_level(&mut self, theme: LevelTheme, cable: Vec<(i32, i32)>, tilemap_factory: &TilemapFactory, commands: &mut Commands, asset_server: &Res<AssetServer>) -> usize {
+        let offset = Vec2::new((self.levels.len() * 2000) as f32, 0.0);
+        let mut level = Level {
+            offset,
+            tilemap: tilemap_factory.instantiate(offset),
+            cable,
+            theme
+        };
+        level.setup(commands, asset_server);
+        self.levels.push(level);
+
+        self.levels.len() - 1
+    }
 }
 
 
-pub fn test_layers(mut commands: Commands, mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>, assets: Res<AssetServer>) {
+pub fn setup_main_level(mut commands: Commands, mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>, assets: Res<AssetServer>) {
+    let tilemap_factory = TilemapFactory {
+        atlas_layout: texture_atlases.add(TextureAtlasLayout::from_grid(Vec2::splat(16.0), 4, 4, None, None)),
+        texture: assets.load("textures/rj45-tile.png")
+    };
+
     let path = vec![
         (-6, 2), (-5, 2), (-4, 2), (-3, 2), (-2, 2), (-1, 2), (0, 2), (1, 2), (2, 2), (3, 2), (4, 2), (5, 2), (6, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (0, 3)
     ];
-    let tilemap = Tilemap::new(
-        texture_atlases.add(TextureAtlasLayout::from_grid(Vec2::splat(16.0), 4, 4, None, None)),
-        assets.load("textures/rj45-tile.png")
-    );
-    let mut level = Level {
-        offset: Vec2::splat(0.0),
-        tilemap,
-        cable: path,
-        theme: LevelTheme::Black,
-    };
-    level.setup(&mut commands, &assets)
+    let path2 = vec![
+        (5, 5), (4, 5), (4, 6), (3, 6), (3, 7), (2, 7), (2, 6), (1, 6), (0, 6), (0, 5), (-1, 5), (-2, 5), (-2, 4), (-3, 4), (-3, 3), (-4, 3), (-4, 2), (-5, 2), (-5, 1), (-6, 1)
+    ];
+    let mut manager = LevelManager {levels: vec![], active: 0};
+    manager.add_level(LevelTheme::Green, path.clone(), &tilemap_factory, &mut commands, &assets);
+    manager.add_level(LevelTheme::Black, path2.clone(), &tilemap_factory, &mut commands, &assets);
+
+    commands.insert_resource(manager);
+    commands.insert_resource(tilemap_factory);
+}
+
+pub fn debug_level_switch(mut manager: ResMut<LevelManager>, keys: Res<ButtonInput<KeyCode>>, mut camera_query: Query<&mut Transform, With<Camera>>) {
+    let mut camera_position = camera_query.single_mut();
+
+    if keys.just_pressed(KeyCode::KeyH) {
+        let new_index = (manager.active + 1) % manager.levels.len();
+        println!("[DEBUG] switching to {}", manager.active + 1 % manager.levels.len());
+        manager.switch_view(new_index, &mut camera_position)
+    }
 }
