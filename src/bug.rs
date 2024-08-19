@@ -5,11 +5,13 @@ use crate::level::{Level, LevelManager};
 use crate::cable::{delta, Direction};
 use crate::tilemap::{TilemapFactory, TILE_SIZE};
 
-const BUG_SPEED: f32 = 213.7;
+const BUG_SPEED: f32 = 2.137;
 
 #[derive(Component)]
 pub struct BugSprite {
-    cable_progress: usize
+    pub cable_progress: usize,
+    pub resistor_debuff: bool,
+    pub health: u32
 }
 
 #[derive(Resource)]
@@ -36,7 +38,9 @@ impl BugFactory {
                 index: 0
             },
             BugSprite {
-                cable_progress: 0
+                cable_progress: 0,
+                resistor_debuff: false,
+                health: 1000
             }
         )
     }
@@ -80,7 +84,11 @@ pub fn move_bugs(
             }
             continue;
         }
-        let direction_normalized = direction.normalize() * BUG_SPEED * time.delta_seconds();
+        let direction_normalized = direction.normalize()
+            * BUG_SPEED
+            // * time.delta_seconds()
+            * if bug_sprite.resistor_debuff { 0.2 } else { 1.0 }
+            ;
         transform.translation += direction_normalized;
         let angle = direction_normalized.y.atan2(direction_normalized.x);
         // println!("[DEBUG] angle: {:?}", angle);

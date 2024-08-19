@@ -91,6 +91,10 @@ impl Tilemap {
         ).id();
         self.tiles.insert(position, entity);
     }
+
+    pub fn is_occupied(&self, position: IVec3) -> bool {
+        self.tiles.contains_key(&position)
+    }
 }
 
 #[derive(Resource)]

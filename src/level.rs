@@ -1,8 +1,11 @@
+use std::collections::HashMap;
 use std::fmt::format;
 use bevy::prelude::*;
 use crate::cable::set_cable;
 use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, Tilemap, TileType, TilemapFactory};
 use crate::camera::CAMERA_OFFSET;
+use crate::tower::{TowerType, TowerSprite};
+
 pub enum LevelTheme {
     Black ,
     Blue,
@@ -26,6 +29,7 @@ pub struct Level {
     pub(crate) cable: Vec<(i32, i32)>,
     theme: LevelTheme,
     pub money: i32,
+    pub towers: HashMap<(i32, i32), TowerSprite>
 }
 
 impl Level {
@@ -65,6 +69,7 @@ impl LevelManager {
             cable,
             theme,
             money,
+            towers: HashMap::new()
         };
         level.setup(commands, asset_server);
         self.levels.push(level);

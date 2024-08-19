@@ -5,6 +5,9 @@ use crate::tilemap::{MAP_WIDTH, TILE_SIZE};
 #[derive(Component)]
 pub struct StatsText;
 
+#[derive(Component)]
+pub struct TowerStats;
+
 pub const MENU_WIDTH: f32 = 368.0;
 
 pub fn spawn_text(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -27,6 +30,37 @@ pub fn spawn_text(mut commands: Commands, asset_server: Res<AssetServer>) {
             }),
         StatsText,
     ));
+    commands.spawn((
+        TextBundle::from_sections([
+            TextSection {
+                value: "".to_string(),
+                style: TextStyle {
+                    font: asset_server.load("fonts/QuinqueFive.ttf"),
+                    font_size: 15.0,
+                    color: Color::rgb(0., 1., 0.),
+                    ..default()
+                },
+            },
+            TextSection {
+                value: "".to_string(),
+                style: TextStyle {
+                    font: asset_server.load("fonts/QuinqueFive.ttf"),
+                    font_size: 7.5,
+                    color: Color::rgb(0., 1., 0.),
+                    ..default()
+                },
+            }
+        ])
+            .with_text_justify(JustifyText::Left)
+            .with_style(Style{
+                position_type: PositionType::Absolute,
+                top: Val::Px(400.0),
+                left: Val::Px((MAP_WIDTH * TILE_SIZE) as f32 + 20.0),
+                ..default()
+            }),
+        TowerStats,
+    ));
+
 }
 
 pub fn update_stats_text(mut text_query: Query<&mut Text, With<StatsText>>, manager: Res<LevelManager>) {

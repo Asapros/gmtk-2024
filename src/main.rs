@@ -16,8 +16,8 @@ use crate::level::{setup_main_level, debug_level_switch};
 use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE};
 use crate::animations::{BugsAnimationTimer, bugs_animation, SelectionAnimationTimer, config_selection_animation, selection_animation};
 use crate::ui::{spawn_text, MENU_WIDTH, update_stats_text, debug_add_money};
-use crate::selection::{tile_selection, TileSelection, SelectionEvent, tower_options};
-
+use crate::selection::{tile_selection, TileSelection, SelectionEvent, tower_options, TowerBuildEvent};
+use crate::tower::{handle_build_tower, handle_resistor};
 
 fn main() {
     App::new()
@@ -42,6 +42,7 @@ fn main() {
         .insert_resource(BugsAnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)))
         .insert_resource(SelectionAnimationTimer(Timer::from_seconds(0.5, TimerMode::Repeating)))
         .add_event::<SelectionEvent>()
+        .add_event::<TowerBuildEvent>()
         .add_systems(Startup, (setup_camera, setup_main_level, load_bugs, spawn_text))
         .add_systems(Update, (
             debug_level_switch,
@@ -53,7 +54,9 @@ fn main() {
             update_stats_text,
             tile_selection,
             debug_add_money,
-            tower_options
+            tower_options,
+            handle_build_tower,
+            handle_resistor
         ))
         .run();
 }
