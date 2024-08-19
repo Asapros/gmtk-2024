@@ -48,7 +48,7 @@ pub fn selection_animation(
     let tiles = [TileType::SelectionBigger, TileType::SelectionSmaller];
     if timer.0.tick(time.delta()).just_finished() {
         for tile in tiles {
-            level.set(&mut commands)
+            // level.set(&mut commands)
         }
     }
 }

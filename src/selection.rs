@@ -49,10 +49,17 @@ pub fn tile_selection(
     if buttons.just_pressed(MouseButton::Left) {
         let previous = tile_selection.tile;
         if tile.x > 7 {
+            if previous.is_none() {
+                return;
+            }
             tile_selection.tile = None;
             selection_event_writer.send(SelectionEvent{deselected: previous, selected: tile_selection.tile});
 
-            if tile.x == 11 && tile.
+            if tile.x == 11 && tile.y == 0 {
+                println!("[DEBUG] left")
+            }
+            if tile.x == 12 && tile.y == 0 {
+                println!("[DEBUG] right")
             }
             return;
         }
