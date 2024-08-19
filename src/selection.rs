@@ -56,7 +56,7 @@ pub fn tile_selection(
             selection_event_writer.send(SelectionEvent{deselected: previous, selected: tile_selection.tile});
 
             if tile.x == 11 && tile.y == 0 {
-                println!("[DEBUG] left")
+                println!("[Debug] left")
             }
             if tile.x == 12 && tile.y == 0 {
                 println!("[DEBUG] right")

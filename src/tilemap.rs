@@ -6,19 +6,32 @@ pub const MAP_HEIGHT: i32 = 16;
 
 pub const TILE_SIZE: i32 = 48;
 
+#[derive(Clone, Copy)]
 pub enum TileType {
     EndEastCable = 1,
     EndWestCable = 3,
     EndSouthCable = 8,
-    EndNorthCable = 25,
+    EndNorthCable = 24,
     HorizontalCable = 2,
     VerticalCable = 16,
     NorthWestCable = 18,
     NorthEastCable = 17,
     SouthWestCable = 10,
     SouthEastCable = 9,
-    SelectionBigger = 22,
-    SelectionSmaller = 21,
+    SelectionBigger = 19,
+    SelectionSmaller = 20,
+    ResistorTower = 4,
+    CapacitorTower = 5,
+    Transistor = 6,
+    LedOff = 21,
+    LedOn = 22,
+    Servo1 = 25,
+    Servo2 = 26,
+    Servo3 = 27,
+    Servo4 = 28,
+    Wind1 = 29,
+    Wind2 = 30,
+    Wind3 = 31,
 }
 
 #[derive(Resource)]

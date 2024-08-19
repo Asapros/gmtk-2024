@@ -29,12 +29,18 @@ pub fn config_selection_animation(
 ) {
     let mut level = manager.get_current_level_mut();
     for event in selection_event_reader.read() {
-        if event.selected.is_none() {
-            level.tilemap.set(&mut commands, event.deselected.unwrap(), None);
-            timer.0.pause();
-            continue;
+        // println!("[DEBUG] WOOOOOOOOOOOOOOOOOO");
+        if let Some(selected) = event.selected {
+            // println!("[DEBUG] s");
+            level.tilemap.set(&mut commands, selected, Some(TileType::SelectionBigger));
         }
-        timer.0.unpause();
+        if let Some(deselected) = event.deselected {
+            // println!("[DEBUG] d");
+            level.tilemap.set(&mut commands, deselected, None);
+        }
+        // timer.0.pause();
+        // timer.0.reset();
+        // timer.0.unpause();
     }
 }
 
@@ -42,13 +48,16 @@ pub fn selection_animation(
     mut commands: Commands,
     mut timer: ResMut<SelectionAnimationTimer>,
     mut manager: ResMut<LevelManager>,
+    mut selection_event_reader: EventReader<SelectionEvent>,
     time: Res<Time>,
 ) {
     let level = manager.get_current_level_mut();
     let tiles = [TileType::SelectionBigger, TileType::SelectionSmaller];
     if timer.0.tick(time.delta()).just_finished() {
         for tile in tiles {
-            // level.set(&mut commands)
+            for event in selection_event_reader.read() {
+                level.tilemap.set(&mut commands, event.selected.unwrap(), Some(tile));
+            }
         }
     }
 }

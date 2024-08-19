@@ -14,7 +14,7 @@ use crate::bug::{debug_spawn_bug, load_bugs, move_bugs};
 use crate::camera::setup_camera;
 use crate::level::{setup_main_level, debug_level_switch};
 use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE};
-use crate::animations::{BugsAnimationTimer, bugs_animation, SelectionAnimationTimer, config_selection_animation};
+use crate::animations::{BugsAnimationTimer, bugs_animation, SelectionAnimationTimer, config_selection_animation, selection_animation};
 use crate::ui::{spawn_text, MENU_WIDTH, update_stats_text, debug_add_money};
 use crate::selection::{tile_selection, TileSelection, SelectionEvent, tower_options};
 
@@ -49,6 +49,7 @@ fn main() {
             move_bugs,
             bugs_animation,
             config_selection_animation,
+            // selection_animation,
             update_stats_text,
             tile_selection,
             debug_add_money,
