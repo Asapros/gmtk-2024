@@ -1,9 +1,10 @@
 use bevy::prelude::*;
-
+use bevy::core::FrameCount;
 use crate::bug::{BugSprite};
 use crate::level::LevelManager;
 use crate::selection::{SelectionEvent, TileSelection};
 use crate::tilemap::TileType;
+use crate::tower::TowerType;
 
 #[derive(Resource)]
 pub struct BugsAnimationTimer(pub Timer);
@@ -57,6 +58,23 @@ pub fn selection_animation(
         for tile in tiles {
             for event in selection_event_reader.read() {
                 level.tilemap.set(&mut commands, event.selected.unwrap(), Some(tile));
+            }
+        }
+    }
+}
+const DIODE_DURATION: u32 = 10;
+pub fn led_tower_animation(
+    mut manager: ResMut<LevelManager>,
+    mut commands: Commands,
+) {
+    let mut level = manager.get_current_level_mut();
+    for (position, tower) in level.towers.iter() {
+        if tower.tower_type == TowerType::Diode {
+            if tower.frame_counter == 0 {
+                 level.tilemap.set(&mut commands, IVec3::new(position.0, position.1, 4), Some(TileType::LedOn));
+            }
+            if tower.frame_counter == DIODE_DURATION {
+                level.tilemap.set(&mut commands, IVec3::new(position.0, position.1, 4), Some(TileType::LedOff));
             }
         }
     }

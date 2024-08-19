@@ -9,15 +9,15 @@ mod tower;
 mod selection;
 
 use bevy::prelude::*;
-use bevy::window::EnabledButtons;
-use crate::bug::{debug_spawn_bug, load_bugs, move_bugs};
+use bevy::window::{EnabledButtons, PresentMode};
+use crate::bug::{debug_spawn_bug, load_bugs, move_bugs, check_bug_health};
 use crate::camera::setup_camera;
 use crate::level::{setup_main_level, debug_level_switch};
 use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE};
-use crate::animations::{BugsAnimationTimer, bugs_animation, SelectionAnimationTimer, config_selection_animation, selection_animation};
+use crate::animations::{BugsAnimationTimer, led_tower_animation, bugs_animation, SelectionAnimationTimer, config_selection_animation, selection_animation};
 use crate::ui::{spawn_text, MENU_WIDTH, update_stats_text, debug_add_money};
 use crate::selection::{tile_selection, TileSelection, SelectionEvent, tower_options, TowerBuildEvent};
-use crate::tower::{handle_build_tower, handle_resistor};
+use crate::tower::{handle_build_tower, handle_resistor, handle_led};
 
 fn main() {
     App::new()
@@ -28,6 +28,7 @@ fn main() {
                     title: "MAM DOSYC".into(),
                     resolution: ((MAP_WIDTH * TILE_SIZE) as f32 + MENU_WIDTH, (MAP_HEIGHT * TILE_SIZE) as f32).into(),
                     resizable: false,
+                    present_mode: PresentMode::AutoVsync,
                     // mode: bevy::window::WindowMode::SizedFullscreen,
                     enabled_buttons: EnabledButtons {
                         maximize: false,
@@ -56,7 +57,10 @@ fn main() {
             debug_add_money,
             tower_options,
             handle_build_tower,
-            handle_resistor
+            handle_resistor,
+            handle_led,
+            check_bug_health,
+            led_tower_animation,
         ))
         .run();
 }

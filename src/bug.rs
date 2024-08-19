@@ -11,7 +11,7 @@ const BUG_SPEED: f32 = 2.137;
 pub struct BugSprite {
     pub cable_progress: usize,
     pub resistor_debuff: bool,
-    pub health: u32
+    pub health: i32
 }
 
 #[derive(Resource)]
@@ -96,3 +96,13 @@ pub fn move_bugs(
     }
 }
 
+pub fn check_bug_health(
+    mut commands: Commands,
+    mut bugs_query: Query<(Entity, &mut BugSprite)>,
+) {
+    for (entity, mut bug_sprite) in bugs_query.iter_mut() {
+        if bug_sprite.health <= 0 {
+            commands.entity(entity).despawn();
+        }
+    }
+}
