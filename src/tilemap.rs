@@ -4,19 +4,21 @@ use bevy::prelude::*;
 pub const MAP_WIDTH: i32 = 16;
 pub const MAP_HEIGHT: i32 = 16;
 
-pub const TILE_SIZE: i32 = 64;
+pub const TILE_SIZE: i32 = 48;
 
 pub enum TileType {
     EndEastCable = 1,
     EndWestCable = 3,
-    EndSouthCable = 4,
-    EndNorthCable = 12,
+    EndSouthCable = 8,
+    EndNorthCable = 25,
     HorizontalCable = 2,
-    VerticalCable = 8,
-    NorthWestCable = 10,
-    NorthEastCable = 9,
-    SouthWestCable = 6,
-    SouthEastCable = 5,
+    VerticalCable = 16,
+    NorthWestCable = 18,
+    NorthEastCable = 17,
+    SouthWestCable = 10,
+    SouthEastCable = 9,
+    SelectionBigger = 22,
+    SelectionSmaller = 21,
 }
 
 #[derive(Resource)]

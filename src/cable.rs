@@ -51,6 +51,13 @@ pub fn set_cable(tilemap: &mut Tilemap, commands: &mut Commands, path: &Vec<(i32
             (Some(Direction::South), Some(Direction::West)) => TileType::SouthWestCable,
             (_, _) => {unreachable!()}
         };
-        tilemap.set(commands, IVec3::new(coordinate.0, coordinate.1, 1), Some(tile_type))
+        let z= match tile_type {
+            TileType::EndNorthCable => 3,
+            TileType::EndSouthCable => 3,
+            TileType::EndWestCable => 3,
+            TileType::EndEastCable => 3,
+            _ => 1
+        };
+        tilemap.set(commands, IVec3::new(coordinate.0, coordinate.1, z), Some(tile_type))
     }
 }

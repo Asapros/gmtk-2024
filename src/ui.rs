@@ -1,11 +1,11 @@
 use bevy::pbr::wireframe::Wireframe;
 use bevy::prelude::*;
 use crate::level::{Level, LevelManager};
-use crate::tilemap::{MAP_WIDTH};
+use crate::tilemap::{MAP_WIDTH, TILE_SIZE};
 #[derive(Component)]
 pub struct StatsText;
 
-pub const MENU_WIDTH: f32 = 400.0;
+pub const MENU_WIDTH: f32 = 368.0;
 
 pub fn spawn_text(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
@@ -22,7 +22,7 @@ pub fn spawn_text(mut commands: Commands, asset_server: Res<AssetServer>) {
             .with_style(Style{
                 position_type: PositionType::Absolute,
                 top: Val::Px(10.0),
-                left: Val::Px((MAP_WIDTH * 48) as f32 + 280.0),
+                left: Val::Px((MAP_WIDTH * TILE_SIZE) as f32 + 20.0),
                 ..default()
             }),
         StatsText,

@@ -82,8 +82,8 @@ impl LevelManager {
 
 pub fn setup_main_level(mut commands: Commands, mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>, assets: Res<AssetServer>) {
     let tilemap_factory = TilemapFactory {
-        atlas_layout: texture_atlases.add(TextureAtlasLayout::from_grid(Vec2::splat(16.0), 4, 4, None, None)),
-        texture: assets.load("tiles/rj45.png")
+        atlas_layout: texture_atlases.add(TextureAtlasLayout::from_grid(Vec2::splat(16.0), 8, 4, None, None)),
+        texture: assets.load("tiles/TileSet.png")
     };
 
     let path = vec![
