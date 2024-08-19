@@ -2,7 +2,7 @@ use std::fmt::format;
 use bevy::prelude::*;
 use crate::cable::set_cable;
 use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, Tilemap, TileType, TilemapFactory};
-
+use crate::camera::CAMERA_OFFSET;
 pub enum LevelTheme {
     Black ,
     Blue,
@@ -54,7 +54,7 @@ impl LevelManager {
     pub fn switch_view(&mut self, index: usize, transform: &mut Transform) {
         self.active = index;
         let level = &self.levels[index];
-        transform.translation = Vec3::new(level.offset.x + 256., level.offset.y, 0.0);
+        transform.translation = Vec3::new(level.offset.x + CAMERA_OFFSET, level.offset.y, 0.0);
     }
 
     pub fn add_level(&mut self, theme: LevelTheme, cable: Vec<(i32, i32)>, tilemap_factory: &TilemapFactory, commands: &mut Commands, asset_server: &Res<AssetServer>, money: i32) -> usize {

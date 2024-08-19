@@ -39,10 +39,22 @@ impl Tilemap {
         )
     }
 
-    pub fn set(&mut self, commands: &mut Commands, position: IVec3, tile_type: TileType) {
+    pub fn translation_to_grid(&self, translation: Vec2) -> (i32, i32) {
+        let x = ((translation.x - self.offset.x) / TILE_SIZE as f32).floor() as i32;
+        let y = ((translation.y - self.offset.y) / TILE_SIZE as f32).floor() as i32;
+
+        (x, y)
+    }
+
+    pub fn set(&mut self, commands: &mut Commands, position: IVec3, tile_type: Option<TileType>) {
         if let Some(entity) = self.tiles.get(&position) {
             commands.entity(entity.clone()).despawn()
         }
+        if tile_type.is_none() {
+            self.tiles.remove(&position);
+            return
+        };
+
         let translation = Vec3::from(
             (self.grid_to_translation((position.x, position.y)), position.z as f32)
         );
@@ -58,7 +70,7 @@ impl Tilemap {
             },
             TextureAtlas {
                 layout: self.atlas_layout.clone(),
-                index: tile_type as usize
+                index: tile_type.unwrap() as usize
             }
         )
         ).id();
