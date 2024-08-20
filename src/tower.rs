@@ -1,6 +1,7 @@
 use bevy::audio::{PlaybackMode, Volume};
 use bevy::math::IVec3;
 use bevy::prelude::*;
+use std::time::{SystemTime, UNIX_EPOCH};
 use crate::bug::BugSprite;
 use crate::cable::random_path;
 use crate::level::{LevelManager, LevelTheme, TilemapFactoryResource};
@@ -71,7 +72,8 @@ pub fn handle_build_tower(
 ) {
     for event in tower_build_reader.read() {
         let parent = Some(manager.active.clone());
-        let random = (time.elapsed_seconds() * 100.0) as usize;
+        let duration_since_epoch = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+        let random = duration_since_epoch.as_secs() as usize;
         let recursed = manager.add_level(LevelTheme::Blue, random_path(random), &tilemap_factory.0, &mut commands, &asset_server, parent);
         let mut level = manager.get_current_level_mut();
         match event.tower {

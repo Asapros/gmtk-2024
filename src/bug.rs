@@ -1,3 +1,4 @@
+use std::time::{SystemTime, UNIX_EPOCH};
 use bevy::input::ButtonInput;
 use bevy::prelude::*;
 use bevy::sprite::SpriteBundle;
@@ -19,16 +20,47 @@ pub struct BugSprite {
 
 #[derive(Resource)]
 pub struct BugFactory {
-    pub(crate) texture: Handle<Image>,
+    pub(crate) texture: [Handle<Image>; 9],
     pub(crate) atlas_layout: Handle<TextureAtlasLayout>,
 }
 
 
 impl BugFactory {
-    pub fn instantiate(&self, transform: Transform) -> (SpriteBundle, TextureAtlas, BugSprite){
+    pub fn instantiate_bugs(&self, transform: Transform) -> (SpriteBundle, TextureAtlas, BugSprite){
+        let duration_since_epoch = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+        let random = ((duration_since_epoch.as_nanos() * duration_since_epoch.as_nanos()) as usize) / 10;
+        let seed = random % 4;
+        let textures = self.texture.clone();
         (
             SpriteBundle {
-                texture: self.texture.clone(),
+                texture: textures[seed].clone(),
+                transform,
+                sprite: Sprite {
+                    custom_size: Some(Vec2::splat(TILE_SIZE as f32) * 0.8),
+                    ..default()
+                },
+                ..default()
+            },
+            TextureAtlas {
+                layout: self.atlas_layout.clone(),
+                index: 0
+            },
+            BugSprite {
+                cable_progress: 0,
+                resistor_debuff: 1.0,
+                health: 1000
+            }
+        )
+    }
+
+    pub fn instantiate_ants(&self, transform: Transform) -> (SpriteBundle, TextureAtlas, BugSprite){
+        let duration_since_epoch = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+        let random = ((duration_since_epoch.as_nanos() * duration_since_epoch.as_nanos()) as usize) / 10;
+        let seed = (random % 4) + 4;
+        let textures = self.texture.clone();
+        (
+            SpriteBundle {
+                texture: textures[seed].clone(),
                 transform,
                 sprite: Sprite {
                     custom_size: Some(Vec2::splat(TILE_SIZE as f32) * 0.8),
@@ -50,9 +82,20 @@ impl BugFactory {
 }
 
 pub fn load_bugs(mut commands: Commands, mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>, assets: Res<AssetServer>) {
+    let textures = [
+        assets.load("sprites/Bug_sprite_01.png"),
+        assets.load("sprites/Bug_sprite_02.png"),
+        assets.load("sprites/Bug_sprite_03.png"),
+        assets.load("sprites/Bug_sprite_04.png"),
+        assets.load("sprites/Bug_sprite_05.png"),
+        assets.load("sprites/Bug_sprite_06.png"),
+        assets.load("sprites/Bug_sprite_07.png"),
+        assets.load("sprites/Bug_sprite_08.png"),
+        assets.load("sprites/Hamster-sprite-final.png"),
+    ];
     let bug_factory = BugFactory {
         atlas_layout: texture_atlases.add(TextureAtlasLayout::from_grid(Vec2::splat(16.0), 4, 1, None, None)),
-        texture: assets.load("sprites/bug01.png")
+        texture: textures,
     };
     commands.insert_resource(bug_factory)
 }
@@ -63,7 +106,7 @@ pub fn debug_spawn_bug(mut commands: Commands, mut manager: ResMut<LevelManager>
         let position = level.tilemap.grid_to_translation(level.cable[0]);
         let translation = Vec3::from((position, 2.0));
         // let translation = Vec3::from((0.0, 0.0, 2.0));
-        let bug = bug_factory.instantiate(Transform::from_translation(translation));
+        let bug = bug_factory.instantiate_ants(Transform::from_translation(translation));
         commands.spawn(bug);
     }
 }
