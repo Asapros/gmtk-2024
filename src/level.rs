@@ -94,7 +94,7 @@ pub struct TilemapFactoryResource(pub TilemapFactory);
 pub fn setup_main_level(mut commands: Commands, mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>, assets: Res<AssetServer>) {
     let tilemap_factory = TilemapFactory {
         atlas_layout: texture_atlases.add(TextureAtlasLayout::from_grid(Vec2::splat(16.0), 8, 8, None, None)),
-        texture: assets.load("tiles/TileSet.png")
+        texture: assets.load("tiles/TileSet3.png")
     };
 
     let path = vec![
