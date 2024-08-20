@@ -143,6 +143,10 @@ fn show_control_panel(mut level: &mut Level, commands: &mut Commands, text: &mut
     level.tilemap.set(commands, IVec3::new(DONATE_COORDS[3].0, DONATE_COORDS[3].1, 10), Some(TileType::Donate4));
 
 
+    level.tilemap.set(commands, IVec3::new(CONTINUE_COORDS[0].0, CONTINUE_COORDS[0].1, 10), Some(TileType::Continue1));
+    level.tilemap.set(commands, IVec3::new(CONTINUE_COORDS[1].0, CONTINUE_COORDS[1].1, 10), Some(TileType::Continue2));
+    level.tilemap.set(commands, IVec3::new(CONTINUE_COORDS[2].0, CONTINUE_COORDS[2].1, 10), Some(TileType::Continue3));
+    level.tilemap.set(commands, IVec3::new(CONTINUE_COORDS[3].0, CONTINUE_COORDS[3].1, 10), Some(TileType::Continue4));
 
     let tower = level.towers.get(tile_position).unwrap();
     text.sections[0].value = format!("Tower stats:\nMoney: {}\nUpgrade: {}", tower.balance, tower.upgrade_factor).to_string();
@@ -158,6 +162,8 @@ pub const DELETE_COORDS: [(i32, i32); 4] = [(10, -7), (11, -7), (12, -7), (13, -
 pub const RECURSE_COORDS: [(i32, i32); 4] = [(10, -5), (11, -5), (12, -5), (13, -5)];
 pub const DONATE_COORDS: [(i32, i32); 4] = [(10, -3), (11, -3), (12, -3), (13, -3)];
 pub const STEP_OUT_COORDS: [(i32, i32); 4] = [(10, 2), (11, 2), (12, 2), (13, 2)];
+pub const CONTINUE_COORDS: [(i32, i32); 4] = [(10, 4), (11, 4), (12, 4), (13, 4)];
+
 
 pub fn tower_control_panel(
     mut commands: Commands,
