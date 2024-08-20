@@ -1,3 +1,4 @@
+use bevy::audio::{PlaybackMode, Volume};
 use bevy::math::IVec3;
 use bevy::prelude::*;
 use crate::bug::BugSprite;
@@ -72,6 +73,18 @@ pub fn handle_build_tower(
         // println!("[DEBUG] build event");
         level.tilemap.set(&mut commands, IVec3::new(event.position.0, event.position.1, 4), Some(tower_type_to_tile_type(&event.tower)));
         level.towers.insert(event.position, TowerSprite {tower_type: event.tower, frame_counter: 0, upgrade_factor: 1, balance: 0, level_index: recursed});
+        commands.spawn((
+            AudioBundle {
+                source: asset_server.load("sounds/place.ogg"),
+                settings: PlaybackSettings {
+                    paused: false,
+                    mode: PlaybackMode::Despawn,
+                    volume: Volume::new(0.1),
+                    ..default()
+                },
+                ..default()
+            },
+        ));
     }
 }
 

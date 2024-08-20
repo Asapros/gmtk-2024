@@ -2,35 +2,36 @@ use bevy::prelude::*;
 use bevy::audio::*;
 
 #[derive(Component)]
-pub struct BugDieSound;
+pub struct BugDeathSound;
 
 #[derive(Component)]
 pub struct BackgroundMusic;
 
 pub fn setup_sounds(mut commands: Commands, asset_server: Res<AssetServer>) {
+    // commands.spawn((
+    //     AudioBundle {
+    //         source: asset_server.load("sounds/bug_die.ogg"),
+    //         settings: PlaybackSettings {
+    //             paused: false,
+    //             mode: PlaybackMode::Despawn,
+    //             volume: Volume::new(1.0),
+    //             ..default()
+    //         },
+    //         ..default()
+    //     },
+    //     BugDeathSound{}
+    // ));
+
     commands.spawn((
         AudioBundle {
-            source: asset_server.load("sounds/bug_die.ogg"),
+            source: asset_server.load("sounds/music.ogg"),
             settings: PlaybackSettings {
-                paused: true,
-                mode: PlaybackMode::Once,
-                volume: Volume::new(1.0),
+                mode: PlaybackMode::Loop,
+                volume: Volume::new(0.2),
                 ..default()
             },
             ..default()
         },
-        BugDieSound,
+        BackgroundMusic,
     ));
-
-    // commands.spawn((
-    //     AudioBundle {
-    //         source: asset_server.load("sounds/music.ogg"),
-    //         settings: PlaybackSettings {
-    //             mode: PlaybackMode::Loop,
-    //             volume: 0.8,
-    //         }
-    //         ..default()
-    //     },
-    //     BackgroundMusic,
-    // ));
 }
