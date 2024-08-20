@@ -10,7 +10,7 @@ const BUG_SPEED: f32 = 2.137;
 #[derive(Component)]
 pub struct BugSprite {
     pub cable_progress: usize,
-    pub resistor_debuff: bool,
+    pub resistor_debuff: f32,
     pub health: i32
 }
 
@@ -39,7 +39,7 @@ impl BugFactory {
             },
             BugSprite {
                 cable_progress: 0,
-                resistor_debuff: false,
+                resistor_debuff: 1.0,
                 health: 1000
             }
         )
@@ -87,8 +87,7 @@ pub fn move_bugs(
         let direction_normalized = direction.normalize()
             * BUG_SPEED
             // * time.delta_seconds()
-            * if bug_sprite.resistor_debuff { 0.2 } else { 1.0 }
-            ;
+            * bug_sprite.resistor_debuff;
         transform.translation += direction_normalized;
         let angle = direction_normalized.y.atan2(direction_normalized.x);
         // println!("[DEBUG] angle: {:?}", angle);

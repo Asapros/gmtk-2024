@@ -17,7 +17,7 @@ use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE};
 use crate::animations::{BugsAnimationTimer, led_tower_animation, bugs_animation, SelectionAnimationTimer, config_selection_animation, selection_animation};
 use crate::ui::{spawn_text, MENU_WIDTH, update_stats_text, debug_add_money};
 use crate::selection::{tile_selection, TileSelection, SelectionEvent, tower_options, TowerBuildEvent};
-use crate::tower::{handle_build_tower, handle_resistor, handle_led};
+use crate::tower::{handle_build_tower, handle_resistor, handle_led, handle_capacitor, handle_capacitor_bullet};
 
 fn main() {
     App::new()
@@ -61,6 +61,8 @@ fn main() {
             handle_led,
             check_bug_health,
             led_tower_animation,
+            handle_capacitor,
+            handle_capacitor_bullet
         ))
         .run();
 }

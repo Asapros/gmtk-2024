@@ -70,10 +70,10 @@ pub fn tile_selection(
                 match tower_type {
                     TowerType::Resistor => text.sections[0].value = "Slows bugs down\n\nRange:  Very low\nDamage: No\nSpeed:  Indefinite".to_string(),
                     TowerType::Capacitor => text.sections[0].value = "Zaps bugs\n\nRange:  High\nDamage: High\nSpeed:  Low".to_string(),
-                    TowerType::Servo => {
-                        text.sections[0].value = "Suffocates bugs\n\nRange:  Line\nDamage: Low\nSpeed:  Indefinite\n\nNote:\n   no rotation!\n   (left only)".to_string();
-                        text.sections[1].value = "\n\n    (this is definitely a feature)".to_string();
-                    },
+                    // TowerType::Servo => {
+                    //     text.sections[0].value = "Suffocates bugs\n\nRange:  Line\nDamage: Low\nSpeed:  Indefinite\n\nNote:\n   no rotation!\n   (left only)".to_string();
+                    //     text.sections[1].value = "\n\n    (this is definitely a feature)".to_string();
+                    // },
                     TowerType::Diode => text.sections[0].value = "Flashes bugs\n\nRange:  Low\nDamage: Medium\nSpeed:  Fast".to_string(),
                 }
             }
