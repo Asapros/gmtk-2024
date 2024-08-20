@@ -5,7 +5,7 @@ use crate::cable::set_cable;
 use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, Tilemap, TileType, TilemapFactory};
 use crate::camera::CAMERA_OFFSET;
 use crate::selection::{LevelSwitchEvent, SelectionEvent, TileSelection};
-use crate::tower::{TowerType, TowerSprite};
+use crate::tower::{TowerType, TowerSprite, RESISTOR_COST, LED_COST, CAPACITOR_COST};
 use crate::ui::STEP_OUT_COORDS;
 
 pub enum LevelTheme {
@@ -32,7 +32,11 @@ pub struct Level {
     theme: LevelTheme,
     pub money: i32,
     pub towers: HashMap<(i32, i32), TowerSprite>,
-    pub parent: Option<usize>
+    pub parent: Option<usize>,
+    pub round: u32,
+    pub resistor_count: u32,
+    pub capacitor_count: u32,
+    pub led_count: u32
 }
 
 impl Level {
@@ -49,6 +53,18 @@ impl Level {
             },
         ));
         set_cable(&mut self.tilemap, commands, &self.cable)
+    }
+
+    pub fn resistor_cost(&self) -> u32 {
+        RESISTOR_COST * (2_u32).pow(self.resistor_count)
+    }
+
+    pub fn capacitor_cost(&self) -> u32 {
+        CAPACITOR_COST * (2_u32).pow(self.capacitor_count)
+    }
+
+    pub fn led_cost(&self) -> u32 {
+        LED_COST * (2_u32).pow(self.led_count)
     }
 }
 #[derive(Resource)]
@@ -73,7 +89,11 @@ impl LevelManager {
             theme,
             money: 0,
             towers: HashMap::new(),
-            parent
+            parent,
+            round: 0,
+            resistor_count: 0,
+            capacitor_count: 0,
+            led_count: 0
         };
         level.setup(commands, asset_server);
         self.levels.push(level);

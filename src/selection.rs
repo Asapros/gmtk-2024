@@ -3,7 +3,8 @@ use bevy::window::PrimaryWindow;
 use crate::tilemap::TileType;
 use crate::level::LevelManager;
 use crate::tower::{tile_to_tower_types, tower_type_to_tile, tower_type_to_tile_type, TowerType, TOWER_TYPES};
-use crate::ui::{TowerInfo, DELETE_COORDS, RECURSE_COORDS, DONATE_COORDS, STEP_OUT_COORDS};
+use crate::ui::{TowerInfo, DELETE_COORDS, RECURSE_COORDS, DONATE_COORDS, STEP_OUT_COORDS, CONTINUE_COORDS};
+use crate::wave::{GameState, WaveStateChange};
 
 #[derive(Resource)]
 pub struct TileSelection {
@@ -40,7 +41,9 @@ pub fn tile_selection(
     mut tower_build_event_writer: EventWriter<TowerBuildEvent>,
     mut text_query: Query<&mut Text, With<TowerInfo>>,
     mut commands: Commands,
-    mut level_switch_writer: EventWriter<LevelSwitchEvent>
+    mut level_switch_writer: EventWriter<LevelSwitchEvent>,
+    mut wave_state_writer: EventWriter<WaveStateChange>,
+    mut state: ResMut<GameState>
 ) {
     // println!("[DEBUG] tile selection: {:?}", tile_selection.tile);
     let (camera, camera_transform) = camera_query.single();
@@ -61,13 +64,13 @@ pub fn tile_selection(
             let tower_option_tile = tower_type_to_tile(&tower_type);
             if hovered == tower_option_tile {
                 match tower_type {
-                    TowerType::Resistor => text.sections[0].value = "Slows bugs down\n\nRange:  Very low\nDamage: No\nSpeed:  Indefinite".to_string(),
-                    TowerType::Capacitor => text.sections[0].value = "Zaps bugs\n\nRange:  High\nDamage: High\nSpeed:  Low".to_string(),
+                    TowerType::Resistor => text.sections[0].value = format!("Slows bugs down\n\nRange:  Very low\nDamage: No\nSpeed:  Indefinite\nCost:   {} Bit$", level.resistor_cost()).to_string(),
+                    TowerType::Capacitor => text.sections[0].value = format!("Zaps bugs\n\nRange:  High\nDamage: High\nSpeed:  Low\nCost:   {} Bit$", level.capacitor_cost()).to_string(),
                     // TowerType::Servo => {
                     //     text.sections[0].value = "Suffocates bugs\n\nRange:  Line\nDamage: Low\nSpeed:  Indefinite\n\nNote:\n   no rotation!\n   (left only)".to_string();
                     //     text.sections[1].value = "\n\n    (this is definitely a feature)".to_string();
                     // },
-                    TowerType::Diode => text.sections[0].value = "Flashes bugs\n\nRange:  Low\nDamage: Medium\nSpeed:  Fast".to_string(),
+                    TowerType::Diode => text.sections[0].value = format!("Flashes bugs\n\nRange:  Low\nDamage: Medium\nSpeed:  Fast\nCost:   {} Bit$", level.led_cost()).to_string(),
                 }
             }
         }
@@ -76,12 +79,15 @@ pub fn tile_selection(
     if buttons.just_pressed(MouseButton::Left) {
         let previous = tile_selection.tile;
         if tile.x > 7 {
-            if STEP_OUT_COORDS.contains(&hovered) {
+            if STEP_OUT_COORDS.contains(&hovered) && !state.round_running {
                 // println!("[DEBUG] parent");
                 if let Some(parent) = level.parent {
                     // println!("AA");
                     level_switch_writer.send(LevelSwitchEvent{index: parent, deselect: IVec3::new(0,0,2137)});
                 }
+            } else if CONTINUE_COORDS.contains(&hovered) && !state.round_running {
+                wave_state_writer.send(WaveStateChange{running: true});
+                state.round_running = true;
             }
             if previous.is_none() {
                 return;
@@ -95,6 +101,13 @@ pub fn tile_selection(
                 // println!("[DEBUG] tt: {:?}", tower_type);
                 if hovered == tower_option_tile {
                     // println!("[DEBUG] pass");
+                    let cost = match tower_type {
+                        TowerType::Resistor => level.resistor_cost(),
+                        TowerType::Capacitor => level.capacitor_cost(),
+                        TowerType::Diode => level.led_cost()
+                    } as i32;
+                    if (level.money < cost) { return; }
+                    level.money -= cost;
                     tower_build_event_writer.send(TowerBuildEvent{tower: tower_type, position: previous_tile});
                     return;
                 }
@@ -116,7 +129,7 @@ pub fn tile_selection(
                     let index = tower.level_index;
                     manager.levels[index].money = tower.balance;
                 }
-                else if RECURSE_COORDS.contains(&hovered) {
+                else if RECURSE_COORDS.contains(&hovered) && !state.round_running {
                     let index = tower.level_index;
                     level_switch_writer.send(LevelSwitchEvent { index, deselect: previous.unwrap() });
                 }

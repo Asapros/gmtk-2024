@@ -1,5 +1,6 @@
 use bevy::pbr::wireframe::Wireframe;
 use bevy::prelude::*;
+use crate::wave::GameState;
 use crate::level::{Level, LevelManager};
 use crate::selection::SelectionEvent;
 use crate::tilemap::{TileType, MAP_WIDTH, TILE_SIZE};
@@ -59,11 +60,11 @@ pub fn spawn_text(mut commands: Commands, asset_server: Res<AssetServer>) {
             .with_text_justify(JustifyText::Left)
             .with_style(Style{
                 position_type: PositionType::Absolute,
-                top: Val::Px(400.0),
+                top: Val::Px(500.0),
                 left: Val::Px((MAP_WIDTH * TILE_SIZE) as f32 + 20.0),
                 ..default()
             }),
-        TowerInfo,
+        TowerInfo{},
     ));
     commands.spawn((
         TextBundle::from_sections([
@@ -88,10 +89,16 @@ pub fn spawn_text(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 }
 
-pub fn update_stats_text(mut text_query: Query<&mut Text, With<StatsText>>, manager: Res<LevelManager>) {
+pub fn update_stats_text(mut text_query: Query<&mut Text, With<StatsText>>, manager: Res<LevelManager>, state: Res<GameState>) {
     let mut text = text_query.single_mut();
     let level = manager.get_current_level();
-    text.sections[0].value = format!("Money: {}\nRound: {}", level.money.to_string(), "1");
+    text.sections[0].value = if level.parent.is_none() {
+        format!("Bit$: {}\nRnd:  {}/20\nHP:   {}", level.money.to_string(), level.round.to_string(), state.health)
+    } else {
+        format!("Bit$: {}\nRnd:  {}", level.money.to_string(), level.round.to_string())
+    }
+    // let cap = if level.parent.is_none() { "/20" } else {""};
+    // text.sections[0].value = format!("Bits: {}\nRnd:  {}{}\nHealth: {}", level.money.to_string(), level.round.to_string(), cap, state.health);
 }
 
 pub fn debug_add_money(
@@ -125,17 +132,19 @@ pub fn tower_options(mut commands: Commands, mut selection_event_reader: EventRe
         }
     }
 }
-fn show_control_panel(mut level: &mut Level, commands: &mut Commands, text: &mut Mut<Text>, tile_position: &(i32, i32)) {
+fn show_control_panel(mut level: &mut Level, commands: &mut Commands, text: &mut Mut<Text>, tile_position: &(i32, i32), running: bool) {
     level.tilemap.set(commands, IVec3::new(DELETE_COORDS[0].0, DELETE_COORDS[0].1, 10), Some(TileType::Delete1));
     level.tilemap.set(commands, IVec3::new(DELETE_COORDS[1].0, DELETE_COORDS[1].1, 10), Some(TileType::Delete2));
     level.tilemap.set(commands, IVec3::new(DELETE_COORDS[2].0, DELETE_COORDS[2].1, 10), Some(TileType::Delete3));
     level.tilemap.set(commands, IVec3::new(DELETE_COORDS[3].0, DELETE_COORDS[3].1, 10), Some(TileType::Delete4));
 
-    level.tilemap.set(commands, IVec3::new(RECURSE_COORDS[0].0, RECURSE_COORDS[0].1, 10), Some(TileType::StepInto1));
-    level.tilemap.set(commands, IVec3::new(RECURSE_COORDS[1].0, RECURSE_COORDS[1].1, 10), Some(TileType::StepInto2));
-    level.tilemap.set(commands, IVec3::new(RECURSE_COORDS[2].0, RECURSE_COORDS[2].1, 10), Some(TileType::StepInto3));
-    level.tilemap.set(commands, IVec3::new(RECURSE_COORDS[3].0, RECURSE_COORDS[3].1, 10), Some(TileType::StepInto4));
+    if !running {
+        level.tilemap.set(commands, IVec3::new(RECURSE_COORDS[0].0, RECURSE_COORDS[0].1, 10), Some(TileType::StepInto1));
+        level.tilemap.set(commands, IVec3::new(RECURSE_COORDS[1].0, RECURSE_COORDS[1].1, 10), Some(TileType::StepInto2));
+        level.tilemap.set(commands, IVec3::new(RECURSE_COORDS[2].0, RECURSE_COORDS[2].1, 10), Some(TileType::StepInto3));
+        level.tilemap.set(commands, IVec3::new(RECURSE_COORDS[3].0, RECURSE_COORDS[3].1, 10), Some(TileType::StepInto4));
 
+    }
 
     level.tilemap.set(commands, IVec3::new(DONATE_COORDS[0].0, DONATE_COORDS[0].1, 10), Some(TileType::Donate1));
     level.tilemap.set(commands, IVec3::new(DONATE_COORDS[1].0, DONATE_COORDS[1].1, 10), Some(TileType::Donate2));
@@ -143,13 +152,8 @@ fn show_control_panel(mut level: &mut Level, commands: &mut Commands, text: &mut
     level.tilemap.set(commands, IVec3::new(DONATE_COORDS[3].0, DONATE_COORDS[3].1, 10), Some(TileType::Donate4));
 
 
-    level.tilemap.set(commands, IVec3::new(CONTINUE_COORDS[0].0, CONTINUE_COORDS[0].1, 10), Some(TileType::Continue1));
-    level.tilemap.set(commands, IVec3::new(CONTINUE_COORDS[1].0, CONTINUE_COORDS[1].1, 10), Some(TileType::Continue2));
-    level.tilemap.set(commands, IVec3::new(CONTINUE_COORDS[2].0, CONTINUE_COORDS[2].1, 10), Some(TileType::Continue3));
-    level.tilemap.set(commands, IVec3::new(CONTINUE_COORDS[3].0, CONTINUE_COORDS[3].1, 10), Some(TileType::Continue4));
-
     let tower = level.towers.get(tile_position).unwrap();
-    text.sections[0].value = format!("Tower stats:\nMoney: {}\nUpgrade: {}", tower.balance, tower.upgrade_factor).to_string();
+    text.sections[0].value = format!("Tower stats:\n\nBit$:    {}\nUpgrade: {}", tower.balance, tower.upgrade_factor).to_string();
 }
 fn hide_control_panel(mut level: &mut Level, commands: &mut Commands, text: &mut Mut<Text>) {
     for delete_segment in DELETE_COORDS.iter().chain(DONATE_COORDS.iter()).chain(RECURSE_COORDS.iter()) {
@@ -169,7 +173,8 @@ pub fn tower_control_panel(
     mut commands: Commands,
     mut selection_event_reader: EventReader<SelectionEvent>,
     mut manager: ResMut<LevelManager>,
-    mut tower_stats_query: Query<&mut Text, With<TowerStatistics>>
+    mut tower_stats_query: Query<&mut Text, With<TowerStatistics>>,
+    state: Res<GameState>
 ) {
     let mut tower_stats = tower_stats_query.get_single_mut().unwrap();
 
@@ -182,7 +187,7 @@ pub fn tower_control_panel(
         }
         let tile_position = (event.selected.unwrap().x, event.selected.unwrap().y);
         if level.towers.get(&tile_position).is_some() {
-            show_control_panel(&mut level, &mut commands, &mut tower_stats, &tile_position);
+            show_control_panel(&mut level, &mut commands, &mut tower_stats, &tile_position, state.round_running);
         } else {
             hide_control_panel(&mut level, &mut commands, &mut tower_stats);
             continue;

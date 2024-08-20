@@ -4,6 +4,7 @@ use bevy::sprite::SpriteBundle;
 use bevy::audio::*;
 use crate::level::{Level, LevelManager};
 use crate::cable::{delta, Direction};
+use crate::wave::GameState;
 use crate::sounds::{BugDeathSound};
 use crate::tilemap::{TilemapFactory, TILE_SIZE};
 
@@ -71,7 +72,7 @@ pub fn move_bugs(
     mut commands: Commands,
     mut bugs_query: Query<(Entity, &mut Transform, &mut BugSprite)>,
     manager: Res<LevelManager>,
-    time: Res<Time>
+    mut state: ResMut<GameState>
 ) {
     let level = manager.get_current_level();
     for (entity, mut transform, mut bug_sprite) in bugs_query.iter_mut() {
@@ -82,6 +83,7 @@ pub fn move_bugs(
             bug_sprite.cable_progress += 1;
             if bug_sprite.cable_progress >= level.cable.len() {
                 commands.entity(entity).despawn();
+                state.health -= 10;
                 continue;
             }
             continue;

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-pub const CAMERA_OFFSET: f32 = 200.0;
+pub const CAMERA_OFFSET: f32 = 184.0;
 pub fn setup_camera(mut commands: Commands) {
     let color = Color::BLACK;
     commands.spawn(

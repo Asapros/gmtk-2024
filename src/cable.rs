@@ -26,10 +26,11 @@ pub fn random_path(seed: usize) -> Vec<(i32, i32)> {
     let rotated_path = if rotate == 1{
         flipped_path.iter().map(|coord| (coord.1, coord.0)).collect()
     } else {flipped_path};
+    let fixed_path = rotated_path.iter().filter(|coord| { (-8..=7).contains(&coord.0) && (-8..=7).contains(&coord.1)}).cloned().collect();
 
     // println!("[DEBUG] {} {} {}", seed & paths.len(), flip, rotate);
 
-    rotated_path
+    fixed_path
 }
 
 #[derive(Debug)]

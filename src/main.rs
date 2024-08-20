@@ -8,6 +8,7 @@ mod ui;
 mod tower;
 mod selection;
 mod sounds;
+mod wave;
 
 use bevy::prelude::*;
 use bevy::window::{EnabledButtons, PresentMode};
@@ -20,6 +21,7 @@ use crate::ui::{spawn_text, MENU_WIDTH, update_stats_text, debug_add_money, towe
 use crate::selection::{tile_selection, TileSelection, SelectionEvent, TowerBuildEvent, LevelSwitchEvent};
 use crate::tower::{handle_build_tower, handle_resistor, handle_led, handle_capacitor, handle_capacitor_bullet};
 use crate::sounds::{setup_sounds};
+use crate::wave::{setup_game, WaveStateChange, handle_continue_button};
 
 fn main() {
     App::new()
@@ -47,7 +49,8 @@ fn main() {
         .add_event::<SelectionEvent>()
         .add_event::<TowerBuildEvent>()
         .add_event::<LevelSwitchEvent>()
-        .add_systems(Startup, (setup_camera, setup_main_level, load_bugs, spawn_text, setup_sounds))
+        .add_event::<WaveStateChange>()
+        .add_systems(Startup, (setup_camera, setup_main_level, load_bugs, spawn_text, setup_sounds, setup_game))
         .add_systems(Update, (
             debug_level_switch,
             debug_spawn_bug,
@@ -67,7 +70,8 @@ fn main() {
             handle_capacitor,
             handle_capacitor_bullet,
             tower_control_panel,
-            handle_level_switch.before(tower_options)
+            handle_level_switch.before(tower_options).before(tower_control_panel),
+            handle_continue_button.after(tile_selection)
         ))
         .run();
 }

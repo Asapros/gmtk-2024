@@ -25,6 +25,10 @@ pub struct TowerSprite {
 
 pub const TOWER_TYPES: [TowerType; 3] = [TowerType::Resistor, TowerType::Capacitor, TowerType::Diode];
 
+pub const RESISTOR_COST: u32 = 25;
+pub const LED_COST: u32 = 50;
+pub const CAPACITOR_COST: u32 = 75;
+
 pub const DIODE_FRAMES: u32 = 60;
 pub const CAPACITOR_FRAMES: u32 = 240;
 pub fn tile_to_tower_types(tilemap: &Tilemap, position: (i32, i32)) -> Vec<TowerType> {
@@ -70,6 +74,11 @@ pub fn handle_build_tower(
         let random = (time.elapsed_seconds() * 100.0) as usize;
         let recursed = manager.add_level(LevelTheme::Blue, random_path(random), &tilemap_factory.0, &mut commands, &asset_server, parent);
         let mut level = manager.get_current_level_mut();
+        match event.tower {
+            TowerType::Resistor => level.resistor_count += 1,
+            TowerType::Capacitor => level.capacitor_count += 1,
+            TowerType::Diode => level.led_count += 1
+        }
         // println!("[DEBUG] build event");
         level.tilemap.set(&mut commands, IVec3::new(event.position.0, event.position.1, 4), Some(tower_type_to_tile_type(&event.tower)));
         level.towers.insert(event.position, TowerSprite {tower_type: event.tower, frame_counter: 0, upgrade_factor: 1, balance: 0, level_index: recursed});
