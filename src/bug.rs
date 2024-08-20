@@ -15,7 +15,8 @@ const BUG_SPEED: f32 = 2.137;
 pub struct BugSprite {
     pub cable_progress: usize,
     pub resistor_debuff: f32,
-    pub health: i32
+    pub health: i32,
+    pub speed_factor: f32
 }
 
 #[derive(Resource)]
@@ -24,6 +25,12 @@ pub struct BugFactory {
     pub(crate) atlas_layout: Handle<TextureAtlasLayout>,
 }
 
+#[derive(Clone)]
+pub enum BugType {
+    Bug,
+    Ant,
+    Hamster
+}
 
 impl BugFactory {
     pub fn instantiate_bugs(&self, transform: Transform) -> (SpriteBundle, TextureAtlas, BugSprite){
@@ -48,7 +55,8 @@ impl BugFactory {
             BugSprite {
                 cable_progress: 0,
                 resistor_debuff: 1.0,
-                health: 1000
+                health: 1000,
+                speed_factor: 1.0
             }
         )
     }
@@ -75,7 +83,35 @@ impl BugFactory {
             BugSprite {
                 cable_progress: 0,
                 resistor_debuff: 1.0,
-                health: 1000
+                health: 500,
+                speed_factor: 1.7
+            }
+        )
+    }
+    pub fn instantiate_hamster(&self, transform: Transform) -> (SpriteBundle, TextureAtlas, BugSprite){
+        // let duration_since_epoch = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+        // let random = ((duration_since_epoch.as_nanos() * duration_since_epoch.as_nanos()) as usize) / 10;
+        // let seed = (random % 4) + 4;
+        let texture = self.texture[8].clone();
+        (
+            SpriteBundle {
+                texture: texture.clone(),
+                transform,
+                sprite: Sprite {
+                    custom_size: Some(Vec2::splat(TILE_SIZE as f32) * 2.0),
+                    ..default()
+                },
+                ..default()
+            },
+            TextureAtlas {
+                layout: self.atlas_layout.clone(),
+                index: 0
+            },
+            BugSprite {
+                cable_progress: 0,
+                resistor_debuff: 1.0,
+                health: 15000,
+                speed_factor: 0.4
             }
         )
     }
@@ -134,7 +170,7 @@ pub fn move_bugs(
         let direction_normalized = direction.normalize()
             * BUG_SPEED
             // * time.delta_seconds()
-            * bug_sprite.resistor_debuff;
+            * bug_sprite.resistor_debuff * bug_sprite.speed_factor;
         transform.translation += direction_normalized;
         let angle = direction_normalized.y.atan2(direction_normalized.x);
         // println!("[DEBUG] angle: {:?}", angle);

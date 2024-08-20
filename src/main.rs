@@ -21,7 +21,7 @@ use crate::ui::{spawn_text, MENU_WIDTH, update_stats_text, debug_add_money, towe
 use crate::selection::{tile_selection, TileSelection, SelectionEvent, TowerBuildEvent, LevelSwitchEvent};
 use crate::tower::{handle_build_tower, handle_resistor, handle_led, handle_capacitor, handle_capacitor_bullet};
 use crate::sounds::{setup_sounds};
-use crate::wave::{setup_game, WaveStateChange, handle_continue_button};
+use crate::wave::{setup_game, WaveStateChange, handle_continue_button, spawn_wave, end_wave};
 
 fn main() {
     App::new()
@@ -71,7 +71,9 @@ fn main() {
             handle_capacitor_bullet,
             tower_control_panel,
             handle_level_switch.before(tower_options).before(tower_control_panel),
-            handle_continue_button.after(tile_selection)
+            handle_continue_button.after(tile_selection),
+            spawn_wave.after(handle_continue_button),
         ))
+        .add_systems(Update, (end_wave.after(spawn_wave),))
         .run();
 }

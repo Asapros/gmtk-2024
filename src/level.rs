@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::format;
 use bevy::prelude::*;
+use crate::bug::BugType;
 use crate::cable::set_cable;
 use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, Tilemap, TileType, TilemapFactory};
 use crate::camera::CAMERA_OFFSET;
@@ -36,7 +37,10 @@ pub struct Level {
     pub round: u32,
     pub resistor_count: u32,
     pub capacitor_count: u32,
-    pub led_count: u32
+    pub led_count: u32,
+    pub bug_queue: Vec<BugType>,
+    pub bug_queue_speed: u32,
+    pub bug_frames: u32
 }
 
 impl Level {
@@ -93,7 +97,10 @@ impl LevelManager {
             round: 0,
             resistor_count: 0,
             capacitor_count: 0,
-            led_count: 0
+            led_count: 0,
+            bug_queue: vec![],
+            bug_queue_speed: 0,
+            bug_frames: 0
         };
         level.setup(commands, asset_server);
         self.levels.push(level);

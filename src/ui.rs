@@ -93,9 +93,9 @@ pub fn update_stats_text(mut text_query: Query<&mut Text, With<StatsText>>, mana
     let mut text = text_query.single_mut();
     let level = manager.get_current_level();
     text.sections[0].value = if level.parent.is_none() {
-        format!("Bit$: {}\nRnd:  {}/20\nHP:   {}", level.money.to_string(), level.round.to_string(), state.health)
+        format!("Bit$: {}\nRnd:  {}/10\nHP:   {}", level.money.to_string(), level.round.to_string(), state.health)
     } else {
-        format!("Bit$: {}\nRnd:  {}", level.money.to_string(), level.round.to_string())
+        format!("Bit$: {}\nRnd:  {}\nHP:   {}", level.money.to_string(), level.round.to_string(), state.health)
     }
     // let cap = if level.parent.is_none() { "/20" } else {""};
     // text.sections[0].value = format!("Bits: {}\nRnd:  {}{}\nHealth: {}", level.money.to_string(), level.round.to_string(), cap, state.health);
