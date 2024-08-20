@@ -32,6 +32,22 @@ pub enum TileType {
     Wind1 = 29,
     Wind2 = 30,
     Wind3 = 31,
+    Delete1 = 36,
+    Delete2 = 37,
+    Delete3 = 38,
+    Delete4 = 39,
+    Donate1 = 44,
+    Donate2 = 45,
+    Donate3 = 46,
+    Donate4 = 47,
+    StepInto1 = 52,
+    StepInto2 = 53,
+    StepInto3 = 54,
+    StepInto4 = 55,
+    StepOut1 = 60,
+    StepOut2 = 61,
+    StepOut3 = 62,
+    StepOut4 = 63,
 }
 
 #[derive(Resource)]
@@ -97,7 +113,6 @@ impl Tilemap {
     }
 }
 
-#[derive(Resource)]
 pub struct TilemapFactory {
     pub(crate) atlas_layout: Handle<TextureAtlasLayout>,
     pub(crate) texture: Handle<Image>

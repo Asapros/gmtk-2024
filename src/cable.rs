@@ -1,6 +1,37 @@
 use bevy::prelude::*;
 use crate::tilemap::{TileType, Tilemap};
 
+pub fn random_path(seed: usize) -> Vec<(i32, i32)> {
+    let paths = [
+        vec![(-6, -2), (-5, -2), (-4, -2), (-3, -2), (-2, -2), (-1, -2), (-1, -1), (-1, 0), (-1, 1), (-1, 2), (-1, 3), (-1, 4), (0, 4), (1, 4), (2, 4), (3, 4), (4, 4), (5, 4), (5, 3), (5, 2), (5, 1), (5, 0), (5, -1), (5, -2), (5, -3), (5, -4), (5, -5), (5, -6), (5, -7)],
+        vec![(-6, 6), (-5, 6), (-4, 6), (-4, 5), (-4, 4), (-4, 3), (-4, 2), (-4, 1), (-4, 0), (-3, 0), (-2, 0), (-1, 0), (-1, -1), (-1, -2), (0, -2), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2), (2, 2), (3, 2), (4, 2), (5, 2), (6, 2), (6, 1), (6, 0), (7, 0)],
+        vec![(-8, 1), (-7, 1), (-6, 1), (-5, 1), (-4, 1), (-3, 1), (-3, 0), (-3, -1), (-3, -2), (-3, -3), (-3, -4), (-2, -4), (-1, -4), (0, -4), (1, -4), (1, -3), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (2, 6), (3, 6), (4, 6), (5, 6), (5, 5), (5, 4), (5, 3), (5, 2), (5, 1), (6, 1), (7, 1)],
+        vec![(-6, 7), (-6, 6), (-6, 5), (-6, 4), (-6, 3), (-6, 2), (-6, 1), (-5, 1), (-4, 1), (-3, 1), (-2, 1), (-2, 2), (-2, 3), (-2, 4), (-1, 4), (0, 4), (1, 4), (1, 3), (1, 2), (1, 1), (1, 0), (1, -1), (1, -2), (1, -3), (1, -4), (2, -4), (3, -4), (4, -4), (5, -4), (6, -4), (7, -4)]
+    ];
+
+    let mut seed = seed;
+    for i in 1..100 {
+        seed = ((seed + i) * 23) % 100000
+    }
+    seed += 5;
+    // println!("{}", seed);
+
+
+    let path = paths[(seed as f32 * 0.7).ceil() as usize % paths.len()].clone();
+    let flip = (seed) % 2;
+    let rotate = ((seed as f32 * 0.3).ceil() as usize) % 2;
+    let flipped_path = if flip == 1 {
+        path.iter().map(|coord| (coord.0 * -1, coord.1 * -1)).collect()
+    } else {path};
+    let rotated_path = if rotate == 1{
+        flipped_path.iter().map(|coord| (coord.1, coord.0)).collect()
+    } else {flipped_path};
+
+    // println!("[DEBUG] {} {} {}", seed & paths.len(), flip, rotate);
+
+    rotated_path
+}
+
 #[derive(Debug)]
 pub enum Direction {
     North,
@@ -16,7 +47,7 @@ pub fn delta(primary: &(i32, i32), secondary: &(i32, i32)) -> Direction {
         (1, 0) => {Direction::West},
         (0, 1) => {Direction::South},
         (-1, 0) => {Direction::East},
-        (_, _) => {panic!("invalid cable path")}
+        (_, _) => {panic!("invalid cable path ({}, {}) -> ({}, {})", primary.0, primary.1, secondary.0, secondary.1)}
     }
 }
 

@@ -1,9 +1,10 @@
 use bevy::math::IVec3;
 use bevy::prelude::*;
 use crate::bug::BugSprite;
-use crate::level::LevelManager;
+use crate::cable::random_path;
+use crate::level::{LevelManager, LevelTheme, TilemapFactoryResource};
 use crate::selection::TowerBuildEvent;
-use crate::tilemap::{TileType, Tilemap, TILE_SIZE};
+use crate::tilemap::{TileType, Tilemap, TilemapFactory, TILE_SIZE};
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum TowerType {
@@ -38,7 +39,7 @@ pub fn tile_to_tower_types(tilemap: &Tilemap, position: (i32, i32)) -> Vec<Tower
 
 pub fn tower_type_to_tile(tower_type: &TowerType) -> (i32, i32){
     match tower_type {
-        TowerType::Resistor => (11, 1),
+        TowerType::Resistor => (11, -1),
         TowerType::Capacitor => (12, 0),
         // TowerType::Servo => (12, 1),
         TowerType::Diode => (11, 0)
@@ -55,12 +56,22 @@ pub fn tower_type_to_tile_type(tower_type: &TowerType) -> TileType {
 }
 
 // pub fn spawn_tower_control_panel(mut commands: Co)
-pub fn handle_build_tower(mut commands: Commands, mut tower_build_reader: EventReader<TowerBuildEvent>, mut manager: ResMut<LevelManager>) {
-    let mut level = manager.get_current_level_mut();
+pub fn handle_build_tower(
+    mut commands: Commands,
+    mut tower_build_reader: EventReader<TowerBuildEvent>,
+    mut manager: ResMut<LevelManager>,
+    tilemap_factory: Res<TilemapFactoryResource>,
+    asset_server: Res<AssetServer>,
+    time: Res<Time>
+) {
     for event in tower_build_reader.read() {
+        let parent = Some(manager.active.clone());
+        let random = (time.elapsed_seconds() * 100.0) as usize;
+        let recursed = manager.add_level(LevelTheme::Blue, random_path(random), &tilemap_factory.0, &mut commands, &asset_server, parent);
+        let mut level = manager.get_current_level_mut();
         // println!("[DEBUG] build event");
         level.tilemap.set(&mut commands, IVec3::new(event.position.0, event.position.1, 4), Some(tower_type_to_tile_type(&event.tower)));
-        level.towers.insert(event.position, TowerSprite {tower_type: event.tower, frame_counter: 0, upgrade_factor: 1, balance: 0, level_index: 0});
+        level.towers.insert(event.position, TowerSprite {tower_type: event.tower, frame_counter: 0, upgrade_factor: 1, balance: 0, level_index: recursed});
     }
 }
 

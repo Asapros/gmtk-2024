@@ -3,7 +3,7 @@ use bevy::window::PrimaryWindow;
 use crate::tilemap::TileType;
 use crate::level::LevelManager;
 use crate::tower::{tile_to_tower_types, tower_type_to_tile, tower_type_to_tile_type, TowerType, TOWER_TYPES};
-use crate::ui::{TowerInfo, DELETE_COORDS, RECURSE_COORDS, DONATE_COORDS};
+use crate::ui::{TowerInfo, DELETE_COORDS, RECURSE_COORDS, DONATE_COORDS, STEP_OUT_COORDS};
 
 #[derive(Resource)]
 pub struct TileSelection {
@@ -24,6 +24,12 @@ pub struct TowerBuildEvent {
 }
 
 
+#[derive(Event)]
+pub struct LevelSwitchEvent {
+    pub(crate) index: usize,
+    pub(crate) deselect: IVec3
+}
+
 pub fn tile_selection(
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
@@ -33,7 +39,8 @@ pub fn tile_selection(
     mut selection_event_writer: EventWriter<SelectionEvent>,
     mut tower_build_event_writer: EventWriter<TowerBuildEvent>,
     mut text_query: Query<&mut Text, With<TowerInfo>>,
-    mut commands: Commands
+    mut commands: Commands,
+    mut level_switch_writer: EventWriter<LevelSwitchEvent>
 ) {
     // println!("[DEBUG] tile selection: {:?}", tile_selection.tile);
     let (camera, camera_transform) = camera_query.single();
@@ -69,6 +76,13 @@ pub fn tile_selection(
     if buttons.just_pressed(MouseButton::Left) {
         let previous = tile_selection.tile;
         if tile.x > 7 {
+            if STEP_OUT_COORDS.contains(&hovered) {
+                // println!("[DEBUG] parent");
+                if let Some(parent) = level.parent {
+                    // println!("AA");
+                    level_switch_writer.send(LevelSwitchEvent{index: parent, deselect: IVec3::new(0,0,2137)});
+                }
+            }
             if previous.is_none() {
                 return;
             }
@@ -82,28 +96,32 @@ pub fn tile_selection(
                 if hovered == tower_option_tile {
                     // println!("[DEBUG] pass");
                     tower_build_event_writer.send(TowerBuildEvent{tower: tower_type, position: previous_tile});
-                    break;
+                    return;
                 }
             }
+
+
             if let Some(mut tower) = level.towers.get_mut(&previous_tile) {
                 if DELETE_COORDS.contains(&hovered) {
                     level.tilemap.set(&mut commands, IVec3::new(previous_tile.0, previous_tile.1, 4), None);
                     level.towers.remove(&previous_tile);
                 }
                 else if DONATE_COORDS.contains(&hovered) {
-                    if level.money < 100 {
-                        tower.balance += level.money;
-                        level.money = 0;
-                        return;
-                    }
                     level.money -= 100;
                     tower.balance += 100;
+                    if level.money < 0 {
+                        tower.balance += level.money;
+                        level.money = 0;
+                    }
+                    let index = tower.level_index;
+                    manager.levels[index].money = tower.balance;
                 }
                 else if RECURSE_COORDS.contains(&hovered) {
-                    println!("RECURSE");
+                    let index = tower.level_index;
+                    level_switch_writer.send(LevelSwitchEvent { index, deselect: previous.unwrap() });
                 }
-
             }
+
             return;
         }
         // if tile.x < -7 { return; }

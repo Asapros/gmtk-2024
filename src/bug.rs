@@ -1,8 +1,10 @@
 use bevy::input::ButtonInput;
 use bevy::prelude::*;
 use bevy::sprite::SpriteBundle;
+use bevy::audio::*;
 use crate::level::{Level, LevelManager};
 use crate::cable::{delta, Direction};
+use crate::sounds::BugDieSound;
 use crate::tilemap::{TilemapFactory, TILE_SIZE};
 
 const BUG_SPEED: f32 = 2.137;
@@ -97,10 +99,14 @@ pub fn move_bugs(
 
 pub fn check_bug_health(
     mut commands: Commands,
-    mut bugs_query: Query<(Entity, &mut BugSprite)>,
+    mut bugs_query: Query<(Entity, &mut BugSprite, Option<&AudioSink>), With<BugDieSound>>,
 ) {
-    for (entity, mut bug_sprite) in bugs_query.iter_mut() {
+    for (entity, mut bug_sprite, audio_sink) in bugs_query.iter_mut() {
         if bug_sprite.health <= 0 {
+            println!("[DEBUG] Despawning bug: {:?}", entity);
+            if let Some(audio_sink) = audio_sink {
+                audio_sink.play();
+            }
             commands.entity(entity).despawn();
         }
     }

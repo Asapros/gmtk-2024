@@ -126,19 +126,27 @@ pub fn tower_options(mut commands: Commands, mut selection_event_reader: EventRe
     }
 }
 fn show_control_panel(mut level: &mut Level, commands: &mut Commands, text: &mut Mut<Text>, tile_position: &(i32, i32)) {
-    for segment in DELETE_COORDS {
-        level.tilemap.set(commands, IVec3::new(segment.0, segment.1, 10), Some(TileType::Servo1));
-    }
-    for segment in RECURSE_COORDS {
-        level.tilemap.set(commands, IVec3::new(segment.0, segment.1, 10), Some(TileType::VerticalCable));
-    }
-    for segment in DONATE_COORDS {
-        level.tilemap.set(commands, IVec3::new(segment.0, segment.1, 10), Some(TileType::EndNorthCable));
-    }
+    level.tilemap.set(commands, IVec3::new(DELETE_COORDS[0].0, DELETE_COORDS[0].1, 10), Some(TileType::Delete1));
+    level.tilemap.set(commands, IVec3::new(DELETE_COORDS[1].0, DELETE_COORDS[1].1, 10), Some(TileType::Delete2));
+    level.tilemap.set(commands, IVec3::new(DELETE_COORDS[2].0, DELETE_COORDS[2].1, 10), Some(TileType::Delete3));
+    level.tilemap.set(commands, IVec3::new(DELETE_COORDS[3].0, DELETE_COORDS[3].1, 10), Some(TileType::Delete4));
+
+    level.tilemap.set(commands, IVec3::new(RECURSE_COORDS[0].0, RECURSE_COORDS[0].1, 10), Some(TileType::StepInto1));
+    level.tilemap.set(commands, IVec3::new(RECURSE_COORDS[1].0, RECURSE_COORDS[1].1, 10), Some(TileType::StepInto2));
+    level.tilemap.set(commands, IVec3::new(RECURSE_COORDS[2].0, RECURSE_COORDS[2].1, 10), Some(TileType::StepInto3));
+    level.tilemap.set(commands, IVec3::new(RECURSE_COORDS[3].0, RECURSE_COORDS[3].1, 10), Some(TileType::StepInto4));
+
+
+    level.tilemap.set(commands, IVec3::new(DONATE_COORDS[0].0, DONATE_COORDS[0].1, 10), Some(TileType::Donate1));
+    level.tilemap.set(commands, IVec3::new(DONATE_COORDS[1].0, DONATE_COORDS[1].1, 10), Some(TileType::Donate2));
+    level.tilemap.set(commands, IVec3::new(DONATE_COORDS[2].0, DONATE_COORDS[2].1, 10), Some(TileType::Donate3));
+    level.tilemap.set(commands, IVec3::new(DONATE_COORDS[3].0, DONATE_COORDS[3].1, 10), Some(TileType::Donate4));
+
+
+
     let tower = level.towers.get(tile_position).unwrap();
     text.sections[0].value = format!("Tower stats:\nMoney: {}\nUpgrade: {}", tower.balance, tower.upgrade_factor).to_string();
 }
-
 fn hide_control_panel(mut level: &mut Level, commands: &mut Commands, text: &mut Mut<Text>) {
     for delete_segment in DELETE_COORDS.iter().chain(DONATE_COORDS.iter()).chain(RECURSE_COORDS.iter()) {
         level.tilemap.set(commands, IVec3::new(delete_segment.0, delete_segment.1, 10), None);
@@ -149,6 +157,8 @@ fn hide_control_panel(mut level: &mut Level, commands: &mut Commands, text: &mut
 pub const DELETE_COORDS: [(i32, i32); 4] = [(10, -7), (11, -7), (12, -7), (13, -7)];
 pub const RECURSE_COORDS: [(i32, i32); 4] = [(10, -5), (11, -5), (12, -5), (13, -5)];
 pub const DONATE_COORDS: [(i32, i32); 4] = [(10, -3), (11, -3), (12, -3), (13, -3)];
+pub const STEP_OUT_COORDS: [(i32, i32); 4] = [(10, 2), (11, 2), (12, 2), (13, 2)];
+
 pub fn tower_control_panel(
     mut commands: Commands,
     mut selection_event_reader: EventReader<SelectionEvent>,
@@ -159,6 +169,7 @@ pub fn tower_control_panel(
 
     let mut level = manager.get_current_level_mut();
     for event in selection_event_reader.read() {
+        // println!("level {:?}", level.money);
         if event.selected.is_none() {
             hide_control_panel(&mut level, &mut commands, &mut tower_stats);
             continue;

@@ -4,7 +4,9 @@ use bevy::prelude::*;
 use crate::cable::set_cable;
 use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, Tilemap, TileType, TilemapFactory};
 use crate::camera::CAMERA_OFFSET;
+use crate::selection::{LevelSwitchEvent, SelectionEvent, TileSelection};
 use crate::tower::{TowerType, TowerSprite};
+use crate::ui::STEP_OUT_COORDS;
 
 pub enum LevelTheme {
     Black ,
@@ -29,7 +31,8 @@ pub struct Level {
     pub(crate) cable: Vec<(i32, i32)>,
     theme: LevelTheme,
     pub money: i32,
-    pub towers: HashMap<(i32, i32), TowerSprite>
+    pub towers: HashMap<(i32, i32), TowerSprite>,
+    pub parent: Option<usize>
 }
 
 impl Level {
@@ -50,8 +53,8 @@ impl Level {
 }
 #[derive(Resource)]
 pub struct LevelManager {
-    levels: Vec<Level>,
-    active: usize
+    pub levels: Vec<Level>,
+    pub active: usize
 }
 
 impl LevelManager {
@@ -61,15 +64,16 @@ impl LevelManager {
         transform.translation = Vec3::new(level.offset.x + CAMERA_OFFSET, level.offset.y, 0.0);
     }
 
-    pub fn add_level(&mut self, theme: LevelTheme, cable: Vec<(i32, i32)>, tilemap_factory: &TilemapFactory, commands: &mut Commands, asset_server: &Res<AssetServer>, money: i32) -> usize {
+    pub fn add_level(&mut self, theme: LevelTheme, cable: Vec<(i32, i32)>, tilemap_factory: &TilemapFactory, commands: &mut Commands, asset_server: &Res<AssetServer>, parent: Option<usize>) -> usize {
         let offset = Vec2::new((self.levels.len() * 2000) as f32, 0.0);
         let mut level = Level {
             offset,
             tilemap: tilemap_factory.instantiate(offset),
             cable,
             theme,
-            money,
-            towers: HashMap::new()
+            money: 0,
+            towers: HashMap::new(),
+            parent
         };
         level.setup(commands, asset_server);
         self.levels.push(level);
@@ -84,10 +88,12 @@ impl LevelManager {
     }
 }
 
+#[derive(Resource)]
+pub struct TilemapFactoryResource(pub TilemapFactory);
 
 pub fn setup_main_level(mut commands: Commands, mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>, assets: Res<AssetServer>) {
     let tilemap_factory = TilemapFactory {
-        atlas_layout: texture_atlases.add(TextureAtlasLayout::from_grid(Vec2::splat(16.0), 8, 4, None, None)),
+        atlas_layout: texture_atlases.add(TextureAtlasLayout::from_grid(Vec2::splat(16.0), 8, 8, None, None)),
         texture: assets.load("tiles/TileSet.png")
     };
 
@@ -98,19 +104,44 @@ pub fn setup_main_level(mut commands: Commands, mut texture_atlases: ResMut<Asse
         (5, 5), (4, 5), (4, 6), (3, 6), (3, 7), (2, 7), (2, 6), (1, 6), (0, 6), (0, 5), (-1, 5), (-2, 5), (-2, 4), (-3, 4), (-3, 3), (-4, 3), (-4, 2), (-5, 2), (-5, 1), (-6, 1)
     ];
     let mut manager = LevelManager {levels: vec![], active: 0};
-    manager.add_level(LevelTheme::Green, path.clone(), &tilemap_factory, &mut commands, &assets, 69);
-    manager.add_level(LevelTheme::Black, path2.clone(), &tilemap_factory, &mut commands, &assets, 420);
+    manager.add_level(LevelTheme::Green, path.clone(), &tilemap_factory, &mut commands, &assets, None);
+    // manager.add_level(LevelTheme::Black, path2.clone(), &tilemap_factory, &mut commands, &assets, 0);
 
     commands.insert_resource(manager);
-    commands.insert_resource(tilemap_factory);
+    commands.insert_resource(TilemapFactoryResource(tilemap_factory));
 }
 
-pub fn debug_level_switch(mut manager: ResMut<LevelManager>, keys: Res<ButtonInput<KeyCode>>, mut camera_query: Query<&mut Transform, With<Camera>>) {
+pub fn debug_level_switch(mut switch_writer: EventWriter<LevelSwitchEvent>, mut manager: ResMut<LevelManager>, keys: Res<ButtonInput<KeyCode>>, mut camera_query: Query<&mut Transform, With<Camera>>) {
     let mut camera_position = camera_query.single_mut();
 
     if keys.just_pressed(KeyCode::KeyH) {
         let new_index = (manager.active + 1) % manager.levels.len();
-        println!("[DEBUG] switching to {}", manager.active + 1 % manager.levels.len());
-        manager.switch_view(new_index, &mut camera_position)
+        println!("[DEBUG] switching to {}/{}", new_index + 1, manager.levels.len());
+        // manager.switch_view(new_index, &mut camera_position)
+        switch_writer.send(LevelSwitchEvent{index: new_index, deselect: IVec3::new(0,0,2137)});
+    }
+}
+
+pub fn handle_level_switch(
+    mut camera_query: Query<&mut Transform, With<Camera>>,
+    mut commands: Commands,
+    mut level_switch_reader: EventReader<LevelSwitchEvent>,
+    mut manager: ResMut<LevelManager>, selection_tile: Res<TileSelection>,
+    mut selection_writer: EventWriter<SelectionEvent>
+) {
+    for event in level_switch_reader.read() {
+        let mut level = manager.get_current_level_mut();
+        level.tilemap.set(&mut commands, event.deselect, None);
+        let mut camera_transform = camera_query.single_mut();
+        manager.switch_view(event.index, &mut camera_transform);
+        selection_writer.send(SelectionEvent{deselected: Some(IVec3::new(0,0,2137)), selected: None});
+
+        let mut switched_level = manager.get_current_level_mut();
+        if switched_level.parent.is_some() {
+            switched_level.tilemap.set(&mut commands, IVec3::new(STEP_OUT_COORDS[0].0, STEP_OUT_COORDS[0].1, 10), Some(TileType::StepOut1));
+            switched_level.tilemap.set(&mut commands, IVec3::new(STEP_OUT_COORDS[1].0, STEP_OUT_COORDS[1].1, 10), Some(TileType::StepOut2));
+            switched_level.tilemap.set(&mut commands, IVec3::new(STEP_OUT_COORDS[2].0, STEP_OUT_COORDS[2].1, 10), Some(TileType::StepOut3));
+            switched_level.tilemap.set(&mut commands, IVec3::new(STEP_OUT_COORDS[3].0, STEP_OUT_COORDS[3].1, 10), Some(TileType::StepOut4));
+        }
     }
 }
