@@ -16,7 +16,9 @@ pub enum TowerType {
 pub struct TowerSprite {
     pub tower_type: TowerType,
     pub frame_counter: u32,
-    pub upgrade_factor: u32
+    pub upgrade_factor: u32,
+    pub balance: i32,
+    pub level_index: usize
 }
 
 pub const TOWER_TYPES: [TowerType; 3] = [TowerType::Resistor, TowerType::Capacitor, TowerType::Diode];
@@ -52,12 +54,13 @@ pub fn tower_type_to_tile_type(tower_type: &TowerType) -> TileType {
     }
 }
 
+// pub fn spawn_tower_control_panel(mut commands: Co)
 pub fn handle_build_tower(mut commands: Commands, mut tower_build_reader: EventReader<TowerBuildEvent>, mut manager: ResMut<LevelManager>) {
     let mut level = manager.get_current_level_mut();
     for event in tower_build_reader.read() {
         // println!("[DEBUG] build event");
         level.tilemap.set(&mut commands, IVec3::new(event.position.0, event.position.1, 4), Some(tower_type_to_tile_type(&event.tower)));
-        level.towers.insert(event.position, TowerSprite {tower_type: event.tower, frame_counter: 0, upgrade_factor: 1});
+        level.towers.insert(event.position, TowerSprite {tower_type: event.tower, frame_counter: 0, upgrade_factor: 1, balance: 0, level_index: 0});
     }
 }
 

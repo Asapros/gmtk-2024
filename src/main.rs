@@ -15,8 +15,8 @@ use crate::camera::setup_camera;
 use crate::level::{setup_main_level, debug_level_switch};
 use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE};
 use crate::animations::{BugsAnimationTimer, led_tower_animation, bugs_animation, SelectionAnimationTimer, config_selection_animation, selection_animation};
-use crate::ui::{spawn_text, MENU_WIDTH, update_stats_text, debug_add_money};
-use crate::selection::{tile_selection, TileSelection, SelectionEvent, tower_options, TowerBuildEvent};
+use crate::ui::{spawn_text, MENU_WIDTH, update_stats_text, debug_add_money, tower_options, tower_control_panel};
+use crate::selection::{tile_selection, TileSelection, SelectionEvent, TowerBuildEvent};
 use crate::tower::{handle_build_tower, handle_resistor, handle_led, handle_capacitor, handle_capacitor_bullet};
 
 fn main() {
@@ -25,7 +25,7 @@ fn main() {
             .set(ImagePlugin::default_nearest())
             .set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: "MAM DOSYC".into(),
+                    title: "STEP INTO".into(),
                     resolution: ((MAP_WIDTH * TILE_SIZE) as f32 + MENU_WIDTH, (MAP_HEIGHT * TILE_SIZE) as f32).into(),
                     resizable: false,
                     present_mode: PresentMode::AutoVsync,
@@ -62,7 +62,8 @@ fn main() {
             check_bug_health,
             led_tower_animation,
             handle_capacitor,
-            handle_capacitor_bullet
+            handle_capacitor_bullet,
+            tower_control_panel
         ))
         .run();
 }

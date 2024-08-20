@@ -1,12 +1,17 @@
 use bevy::pbr::wireframe::Wireframe;
 use bevy::prelude::*;
 use crate::level::{Level, LevelManager};
-use crate::tilemap::{MAP_WIDTH, TILE_SIZE};
+use crate::selection::SelectionEvent;
+use crate::tilemap::{TileType, MAP_WIDTH, TILE_SIZE};
+use crate::tower::{tile_to_tower_types, tower_type_to_tile, tower_type_to_tile_type, TOWER_TYPES, TowerSprite};
+#[derive(Component)]
+pub struct TowerInfo;
+
 #[derive(Component)]
 pub struct StatsText;
 
 #[derive(Component)]
-pub struct TowerStats;
+pub struct TowerStatistics;
 
 pub const MENU_WIDTH: f32 = 368.0;
 
@@ -58,7 +63,27 @@ pub fn spawn_text(mut commands: Commands, asset_server: Res<AssetServer>) {
                 left: Val::Px((MAP_WIDTH * TILE_SIZE) as f32 + 20.0),
                 ..default()
             }),
-        TowerStats,
+        TowerInfo,
+    ));
+    commands.spawn((
+        TextBundle::from_sections([
+            TextSection {
+                value: "".to_string(),
+                style: TextStyle {
+                    font: asset_server.load("fonts/QuinqueFive.ttf"),
+                    font_size: 20.0,
+                    color: Color::GREEN,
+                    ..default()
+                }
+            }
+        ]).with_text_justify(JustifyText::Left).with_style(
+            Style {
+                position_type: PositionType::Absolute,
+                top: Val::Px(300.0),
+                left: Val::Px((MAP_WIDTH * TILE_SIZE) as f32 + 20.0),
+                ..default()
+            }
+        ), TowerStatistics{}
     ));
 
 }
@@ -80,5 +105,70 @@ pub fn debug_add_money(
     }
     if keys.just_pressed(KeyCode::KeyP) {
         level.money -= 10;
+    }
+}
+
+pub fn tower_options(mut commands: Commands, mut selection_event_reader: EventReader<SelectionEvent>, mut manager: ResMut<LevelManager>) {
+    let mut level = manager.get_current_level_mut();
+    for event in selection_event_reader.read() {
+        // println!("[DEBUG] select: {:?} deselect: {:?}", event.selected, event.deselected);
+        for tower_type in TOWER_TYPES {
+            let tower_tile = tower_type_to_tile(&tower_type);
+            level.tilemap.set(&mut commands, IVec3::new(tower_tile.0, tower_tile.1, 0), None);
+        }
+        if event.selected.is_none() {
+            continue;
+        }
+        for tower_type in tile_to_tower_types(&level.tilemap, (event.selected.unwrap().x, event.selected.unwrap().y)) {
+            let tower_tile = tower_type_to_tile(&tower_type);
+            level.tilemap.set(&mut commands, IVec3::new(tower_tile.0, tower_tile.1, 0), Some(tower_type_to_tile_type(&tower_type)));
+        }
+    }
+}
+fn show_control_panel(mut level: &mut Level, commands: &mut Commands, text: &mut Mut<Text>, tile_position: &(i32, i32)) {
+    for segment in DELETE_COORDS {
+        level.tilemap.set(commands, IVec3::new(segment.0, segment.1, 10), Some(TileType::Servo1));
+    }
+    for segment in RECURSE_COORDS {
+        level.tilemap.set(commands, IVec3::new(segment.0, segment.1, 10), Some(TileType::VerticalCable));
+    }
+    for segment in DONATE_COORDS {
+        level.tilemap.set(commands, IVec3::new(segment.0, segment.1, 10), Some(TileType::EndNorthCable));
+    }
+    let tower = level.towers.get(tile_position).unwrap();
+    text.sections[0].value = format!("Tower stats:\nMoney: {}\nUpgrade: {}", tower.balance, tower.upgrade_factor).to_string();
+}
+
+fn hide_control_panel(mut level: &mut Level, commands: &mut Commands, text: &mut Mut<Text>) {
+    for delete_segment in DELETE_COORDS.iter().chain(DONATE_COORDS.iter()).chain(RECURSE_COORDS.iter()) {
+        level.tilemap.set(commands, IVec3::new(delete_segment.0, delete_segment.1, 10), None);
+    }
+
+    text.sections[0].value = "".to_string();
+}
+pub const DELETE_COORDS: [(i32, i32); 4] = [(10, -7), (11, -7), (12, -7), (13, -7)];
+pub const RECURSE_COORDS: [(i32, i32); 4] = [(10, -5), (11, -5), (12, -5), (13, -5)];
+pub const DONATE_COORDS: [(i32, i32); 4] = [(10, -3), (11, -3), (12, -3), (13, -3)];
+pub fn tower_control_panel(
+    mut commands: Commands,
+    mut selection_event_reader: EventReader<SelectionEvent>,
+    mut manager: ResMut<LevelManager>,
+    mut tower_stats_query: Query<&mut Text, With<TowerStatistics>>
+) {
+    let mut tower_stats = tower_stats_query.get_single_mut().unwrap();
+
+    let mut level = manager.get_current_level_mut();
+    for event in selection_event_reader.read() {
+        if event.selected.is_none() {
+            hide_control_panel(&mut level, &mut commands, &mut tower_stats);
+            continue;
+        }
+        let tile_position = (event.selected.unwrap().x, event.selected.unwrap().y);
+        if level.towers.get(&tile_position).is_some() {
+            show_control_panel(&mut level, &mut commands, &mut tower_stats, &tile_position);
+        } else {
+            hide_control_panel(&mut level, &mut commands, &mut tower_stats);
+            continue;
+        }
     }
 }
