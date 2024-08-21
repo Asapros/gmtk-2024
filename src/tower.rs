@@ -125,7 +125,7 @@ pub fn handle_led(mut bug_query: Query<(&Transform, &mut BugSprite)>, mut manage
                     continue;
                 }
                 bug_sprite.health -= 250;
-                bug_sprite.health -= (tower.upgrade_factor * 50) as i32;
+                bug_sprite.health -= (tower.upgrade_factor * 100) as i32;
             }
         }
     }
@@ -173,7 +173,7 @@ pub fn handle_capacitor(
                         ..default()
                     },
                     ..default()
-                }, CapacitorBullet{id, damage: 750 + (100 * tower.upgrade_factor) as i32}
+                }, CapacitorBullet{id, damage: 750 + (150 * tower.upgrade_factor) as i32}
                 ));
                 break;
             }

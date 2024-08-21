@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt::format;
 use bevy::prelude::*;
 use crate::bug::BugType;
-use crate::cable::set_cable;
+use crate::cable::{random_path, set_cable};
 use crate::tilemap::{MAP_HEIGHT, MAP_WIDTH, TILE_SIZE, Tilemap, TileType, TilemapFactory};
 use crate::camera::CAMERA_OFFSET;
 use crate::selection::{LevelSwitchEvent, SelectionEvent, TileSelection};
@@ -131,8 +131,9 @@ pub fn setup_main_level(mut commands: Commands, mut texture_atlases: ResMut<Asse
         (5, 5), (4, 5), (4, 6), (3, 6), (3, 7), (2, 7), (2, 6), (1, 6), (0, 6), (0, 5), (-1, 5), (-2, 5), (-2, 4), (-3, 4), (-3, 3), (-4, 3), (-4, 2), (-5, 2), (-5, 1), (-6, 1)
     ];
     let mut manager = LevelManager {levels: vec![], active: 0};
-    manager.add_level(LevelTheme::Green, path.clone(), &tilemap_factory, &mut commands, &assets, None);
+    manager.add_level(LevelTheme::Green, random_path(2137), &tilemap_factory, &mut commands, &assets, None);
     // manager.add_level(LevelTheme::Black, path2.clone(), &tilemap_factory, &mut commands, &assets, 0);
+    manager.get_current_level_mut().money = 300;
 
     commands.insert_resource(manager);
     commands.insert_resource(TilemapFactoryResource(tilemap_factory));

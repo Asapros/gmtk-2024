@@ -21,7 +21,7 @@ use crate::ui::{spawn_text, MENU_WIDTH, update_stats_text, debug_add_money, towe
 use crate::selection::{tile_selection, TileSelection, SelectionEvent, TowerBuildEvent, LevelSwitchEvent};
 use crate::tower::{handle_build_tower, handle_resistor, handle_led, handle_capacitor, handle_capacitor_bullet};
 use crate::sounds::{setup_sounds};
-use crate::wave::{setup_game, WaveStateChange, handle_continue_button, spawn_wave, end_wave};
+use crate::wave::{setup_game, WaveStateChange, handle_continue_button, spawn_wave, end_wave, handle_loss};
 
 fn main() {
     App::new()
@@ -52,15 +52,12 @@ fn main() {
         .add_event::<WaveStateChange>()
         .add_systems(Startup, (setup_camera, setup_main_level, load_bugs, spawn_text, setup_sounds, setup_game))
         .add_systems(Update, (
-            debug_level_switch,
-            debug_spawn_bug,
             move_bugs,
             bugs_animation,
             config_selection_animation,
             // selection_animation,
             update_stats_text,
             tile_selection,
-            debug_add_money,
             tower_options,
             handle_build_tower,
             handle_resistor,
@@ -74,6 +71,6 @@ fn main() {
             handle_continue_button.after(tile_selection),
             spawn_wave.after(handle_continue_button),
         ))
-        .add_systems(Update, (end_wave.after(spawn_wave),))
+        .add_systems(Update, (end_wave.after(spawn_wave), handle_loss))
         .run();
 }

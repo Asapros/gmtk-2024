@@ -1,6 +1,6 @@
 [package]
-name = "gmtk-2024"
-version = "0.2.0"
+name = "step-into"
+version = "1.0.0"
 edition = "2021"
 
 [dependencies]

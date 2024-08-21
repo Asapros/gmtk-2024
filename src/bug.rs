@@ -16,7 +16,8 @@ pub struct BugSprite {
     pub cable_progress: usize,
     pub resistor_debuff: f32,
     pub health: i32,
-    pub speed_factor: f32
+    pub speed_factor: f32,
+    pub hamster: bool
 }
 
 #[derive(Resource)]
@@ -56,7 +57,8 @@ impl BugFactory {
                 cable_progress: 0,
                 resistor_debuff: 1.0,
                 health: 1000,
-                speed_factor: 1.0
+                speed_factor: 1.0,
+                hamster: false
             }
         )
     }
@@ -84,7 +86,8 @@ impl BugFactory {
                 cable_progress: 0,
                 resistor_debuff: 1.0,
                 health: 500,
-                speed_factor: 1.7
+                speed_factor: 1.7,
+                hamster: false
             }
         )
     }
@@ -111,7 +114,8 @@ impl BugFactory {
                 cable_progress: 0,
                 resistor_debuff: 1.0,
                 health: 15000,
-                speed_factor: 0.4
+                speed_factor: 0.4,
+                hamster: true
             }
         )
     }
@@ -163,6 +167,9 @@ pub fn move_bugs(
             if bug_sprite.cable_progress >= level.cable.len() {
                 commands.entity(entity).despawn();
                 state.health -= 10;
+                if bug_sprite.hamster {
+                    state.health -= 2137;
+                }
                 continue;
             }
             continue;
